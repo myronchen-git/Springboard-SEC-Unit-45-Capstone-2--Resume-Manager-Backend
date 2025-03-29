@@ -1,0 +1,224 @@
+'use strict';
+
+const db = require('../database/db');
+
+const { AppServerError, NotFoundError } = require('../errors/appErrors');
+
+const logger = require('../util/logger');
+
+// ==================================================
+
+/**
+ * Represents a text snippet.  This can be for a bullet point, job description,
+ * or skill.  It is a String of text that can be placed anywhere.  When updated,
+ * a new text snippet is created, instead of modifying an existing one.
+ */
+class TextSnippet {
+  static tableName = 'text_snippets';
+
+  // To use in SQL statements to return all column data.  Ensure the properties
+  // are in the same order and amount as constructor parameters.
+  static _allDbColsAsJs = `
+    id,
+    version,
+    owner,
+    parent,
+    type,
+    content`;
+
+  constructor(id, version, owner, parent, type, content) {
+    this.id = id;
+    this.version = version;
+    this.owner = owner;
+    this.parent = parent;
+    this.type = type;
+    this.content = content;
+  }
+
+  /**
+   * Creates a new text snippet entry in the database.
+   *
+   * @param {Object} props - Contains data for creating a new text snippet.
+   * @param {String} props.owner - Username that the text snippet belongs to.
+   * @param {String} props.type - The type of content, such as bullet point
+   *  or description.
+   * @param {String} props.content - Content of the text snippet.
+   * @returns {TextSnippet} A new TextSnippet instance that contains the
+   *  text snippet's data.
+   */
+  static async add(props) {
+    const logPrefix = `TextSnippet.add(${JSON.stringify(props)})`;
+    logger.verbose(logPrefix);
+
+    // Allowed properties/attributes.
+    const { owner, type, content } = props;
+
+    const queryConfig = {
+      text: `
+  INSERT INTO ${TextSnippet.tableName} (owner, type, content)
+  VALUES ($1, $2, $3)
+  RETURNING ${TextSnippet._allDbColsAsJs};`,
+      values: [owner, type, content],
+    };
+
+    const result = await db.query({ queryConfig, logPrefix });
+
+    return new TextSnippet(...Object.values(result.rows[0]));
+  }
+
+  /**
+   * Retrieves all the text snippets belonging to a user.
+   *
+   * @param {String} owner - Username to get the text snippets for.
+   * @returns {TextSnippet[]} A list of TextSnippet instances.
+   */
+  static async getAll(owner) {
+    const logPrefix = `TextSnippet.getAll(${owner})`;
+    logger.verbose(logPrefix);
+
+    const queryConfig = {
+      text: `
+  SELECT ${TextSnippet._allDbColsAsJs}
+  FROM ${TextSnippet.tableName}
+  WHERE owner = $1;`,
+      values: [owner],
+    };
+
+    const result = await db.query({ queryConfig, logPrefix });
+
+    return result.rows.map((data) => new TextSnippet(...Object.values(data)));
+  }
+
+  /**
+   * Retrieves a specific text snippet by ID and version.
+   *
+   * @param {Object} queryParams - Contains the query parameters for finding a
+   *  specific text snippet.
+   * @param {Number} queryParams.id - ID of the text snippet.
+   * @param {Date} queryParams.version - Timestamp of the text snippet.
+   * @returns {TextSnippet} A new TextSnippet instance that contains the text
+   *  snippet's data.
+   */
+  static async get(queryParams) {
+    const logPrefix = `TextSnippet.get(${JSON.stringify(queryParams)})`;
+    logger.verbose(logPrefix);
+
+    // Allowed parameters.
+    const { id, version } = queryParams;
+
+    const queryConfig = {
+      text: `
+  SELECT ${TextSnippet._allDbColsAsJs}
+  FROM ${TextSnippet.tableName}
+  WHERE id = $1 AND version = $2;`,
+      values: [id, version],
+    };
+
+    const result = await db.query({ queryConfig, logPrefix });
+
+    if (result.rows.length === 0) {
+      logger.error(`${logPrefix}: TextSnippet not found.`);
+      throw new NotFoundError(
+        `Can not find text snippet with ID ${id} and version ${version}.`
+      );
+    }
+
+    const data = result.rows[0];
+    return new TextSnippet(...Object.values(data));
+  }
+
+  /**
+   * Makes a new text snippet with new properties, with certain properties from
+   * the old.  The old snippet is kept.  If no properties are passed, then the
+   * text snippet is not updated.
+   *
+   * @param {Object} props - Contains the updated properties.
+   * @param {String} [props.type] - New type of content.
+   * @param {String} [props.content] - New content of the text snippet.
+   * @returns {TextSnippet} A new TextSnippet instance, which has a different
+   *  version from the original snippet, and the parent referencing the original
+   *  snippet.
+   */
+  async update(props) {
+    const logPrefix = `TextSnippet.update(${JSON.stringify(props)})`;
+    logger.verbose(logPrefix);
+
+    // If given no arguments, return.
+    if (!props.type && !props.content) return this;
+
+    // Check if text snippet exists in the database.
+    let queryConfig = {
+      text: `
+  SELECT id, version
+  FROM ${TextSnippet.tableName}
+  WHERE id = $1 AND version = $2;`,
+      values: [this.id, this.version],
+    };
+
+    let result = await db.query({ queryConfig, logPrefix });
+
+    if (!result.rows.length) {
+      logger.error(
+        `${logPrefix}: TextSnippet ID ${this.id}, version ${this.version} ` +
+          `was not found.`
+      );
+      throw new AppServerError(
+        `TextSnippet ID ${this.id}, version ${this.version} was not found.`
+      );
+    }
+
+    // Make a new entry so that the old version is kept.
+    queryConfig = {
+      text: `
+  INSERT INTO ${TextSnippet.tableName} (id, owner, parent, type, content)
+  VALUES ($1, $2, $3, $4, $5)
+  RETURNING ${TextSnippet._allDbColsAsJs};`,
+      values: [
+        this.id,
+        this.owner,
+        this.version,
+        props.type || this.type,
+        props.content || this.content,
+      ],
+    };
+
+    result = await db.query({ queryConfig, logPrefix });
+
+    return new TextSnippet(...Object.values(result.rows[0]));
+  }
+
+  /**
+   * Deletes a text snippet entry in the database.  Does not delete the instance
+   * properties/fields.  Remember to delete the instance this belongs to!
+   *
+   * All current instances of the newer versions of the text snippet will be
+   * obsolete, as their parent property will still point to a version that no
+   * longer exists.
+   */
+  async delete() {
+    const logPrefix = `TextSnippet.delete()`;
+    logger.verbose(logPrefix);
+
+    const queryConfig = {
+      text: `
+  DELETE FROM ${TextSnippet.tableName}
+  WHERE id = $1 AND version = $2;`,
+      values: [this.id, this.version],
+    };
+
+    const result = await db.query({ queryConfig, logPrefix });
+
+    if (result.rowCount) {
+      logger.info(
+        `${logPrefix}: ${result.rowCount} text snippet(s) deleted: ` +
+          `id = ${this.id}, version = ${this.version}.`
+      );
+    } else {
+      logger.info(`${logPrefix}: 0 text snippets deleted.`);
+    }
+  }
+}
+
+// ==================================================
+
+module.exports = TextSnippet;

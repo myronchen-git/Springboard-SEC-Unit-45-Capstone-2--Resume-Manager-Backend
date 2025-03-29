@@ -1,0 +1,11 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "http://example.com/schemas/document-relationship-positions.json",
+  "title": "Update Document Relationship Positions",
+  "description": "An array of section, education, experience, or other IDs ordered by desired positions, where index represents position.",
+  "type": "array",
+  "uniqueItems": true,
+  "items": {
+    "type": "integer"
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "http://example.com/schemas/url-params.json",
+  "type": "object",
+  "title": "URL Parameter Inputs",
+  "description": "Validates URL parameters.  Checks if inputs are the correct type, format, pattern, etc..",
+  "additionalProperties": false,
+  "anyOf": [
+    { "title": "Document ID format", "required": ["documentId"] },
+    { "title": "Section ID format", "required": ["sectionId"] },
+    { "title": "Education ID format", "required": ["educationId"] }
+  ],
+  "properties": {
+    "documentId": {
+      "type": "string",
+      "pattern": "^\\d+$",
+      "examples": ["1"]
+    },
+    "sectionId": {
+      "type": "string",
+      "pattern": "^\\d+$",
+      "examples": ["1"]
+    },
+    "educationId": {
+      "type": "string",
+      "pattern": "^\\d+$",
+      "examples": ["1"]
+    }
+  }
+}

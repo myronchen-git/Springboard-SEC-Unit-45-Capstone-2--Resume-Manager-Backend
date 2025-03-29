@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "http://example.com/schemas/user-update.json",
+  "type": "object",
+  "title": "Update User",
+  "description": "Required info when updating.",
+  "additionalProperties": false,
+  "anyOf": [{ "title": "new password", "required": ["newPassword"] }],
+  "properties": {
+    "oldPassword": {
+      "type": "string",
+      "minLength": 6,
+      "maxLength": 20,
+      "examples": ["123Ab!"]
+    },
+    "newPassword": {
+      "type": "string",
+      "pattern": "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[!@#\\$%\\^&\\*\\(\\)\\-\\=\\[\\];\\',\\./_\\+\\{\\}:\"\\<\\>\\?])[A-Za-z\\d!@#\\$%\\^&\\*\\(\\)\\-\\=\\[\\];\\',\\./_\\+\\{\\}:\"\\<\\>\\?]{6,20}$",
+      "examples": ["123Ab!"]
+    }
+  },
+  "examples": [
+    {
+      "oldPassword": "123Ab!",
+      "newPassword": "123Ab!"
+    }
+  ]
+}

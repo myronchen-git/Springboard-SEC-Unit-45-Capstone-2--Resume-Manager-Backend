@@ -1,0 +1,64 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "http://example.com/schemas/contact-info.json",
+  "type": "object",
+  "title": "Add Or Update Contact Info",
+  "description": "Required info for contact information.",
+  "additionalProperties": false,
+  "properties": {
+    "fullName": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 50,
+      "examples": ["First Last"]
+    },
+    "location": {
+      "type": "string",
+      "maxLength": 500,
+      "examples": [
+        "123 Main St., City, State 11111",
+        "123 Main Street, Apartment 2, New York, NY 10001, USA",
+        "5 Oxford Street, London, WC1A 1DP, United Kingdom",
+        "2-1-1 Shinjuku, Shinjuku-ku, Tokyo, 160-0022, Japan",
+        "Lindenstraße 5, 10969 Berlin, German"
+      ]
+    },
+    "email": {
+      "type": "string",
+      "maxLength": 100,
+      "pattern": "^$|^[^\\s@]+@[^\\s@\\.]+\\.[^\\s@\\.]+$",
+      "examples": ["email@email.com"]
+    },
+    "phone": {
+      "type": "string",
+      "maxLength": 20,
+      "examples": [
+        "123-456-7890",
+        "(123) 456-7890",
+        "1234567890",
+        "1-123-456-7890"
+      ]
+    },
+    "linkedin": {
+      "type": "string",
+      "pattern": "^$|linkedin\\.com/in/",
+      "examples": ["linkedin.com/in/name/"]
+    },
+    "github": {
+      "type": "string",
+      "pattern": "^$|github\\.com/",
+      "examples": ["github.com/name"]
+    }
+  },
+  "examples": [
+    { "fullName": "First Last" },
+    {
+      "fullName": "First Last",
+      "location": "123 Main St., City, State 11111",
+      "email": "email@email.com",
+      "phone": "123-456-7890",
+      "linkedin": "linkedin.com/in/name/",
+      "github": "github.com/name"
+    }
+  ]
+}
