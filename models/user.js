@@ -122,13 +122,15 @@ class User {
       'User.update( ' + `username: '${username}', { password: (password) } )`;
     logger.verbose(logPrefix + `: Updating info for "${username}".`);
 
+    const hashedPassword = await bcrypt.hash(password, BCRYPT_WORK_FACTOR);
+
     const queryConfig = {
       text: `
   UPDATE ${User.tableName}
   SET password = $1
   WHERE username = $2
   RETURNING ${User._allDbColsAsJs};`,
-      values: [password, username],
+      values: [hashedPassword, username],
     };
 
     const result = await db.query({ queryConfig, logPrefix });

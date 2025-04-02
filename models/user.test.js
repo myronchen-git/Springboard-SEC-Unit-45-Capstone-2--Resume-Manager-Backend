@@ -56,6 +56,7 @@ describe('User', () => {
       ).rows[0];
 
       expect(databaseEntry).toEqual(expectedUserData);
+      expect(databaseEntry.password).not.toBe(testUser.password);
     });
 
     test('Throws an Error if username is not available.', async () => {
@@ -150,7 +151,8 @@ describe('User', () => {
         })
       ).rows[0];
 
-      expect(databaseEntry.password).toBe(updatedInfo.password);
+      expect(databaseEntry).toEqual(expectedUserData);
+      expect(databaseEntry.password).not.toBe(updatedInfo.password);
     });
 
     test('Throws an Error if username is not found.', async () => {
