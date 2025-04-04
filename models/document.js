@@ -163,22 +163,16 @@ class Document {
 
     const queryConfig = {
       text: `
-  SELECT d.id,
-    d.document_name,
-    d.created_on,
-    d.last_updated,
-    d.is_master,
-    d.is_template,
-    d.is_locked,
+  SELECT ${Document._allDbColsAsJs},
     (
       SELECT json_build_object(
-          'full_name', ci.full_name,
+          'fullName', ci.full_name,
           'location', ci.location,
           'email', ci.email,
           'phone', ci.phone,
           'linkedin', ci.linkedin,
           'github', ci.github
-        ) AS contact_info
+        ) AS "contactInfo"
       FROM contact_info AS ci
       WHERE ci.username = d.owner
     ),
@@ -186,7 +180,7 @@ class Document {
       SELECT json_agg(
         json_build_object(
           'id', s.id,
-          'section_name', s.section_name
+          'sectionName', s.section_name
         )
         ORDER BY dxs.position
       ) AS sections
@@ -201,11 +195,11 @@ class Document {
           'id', ed.id,
           'school', ed.school,
           'location', ed.location,
-          'start_date', ed.start_date,
-          'end_date', ed.end_date,
+          'startDate', ed.start_date,
+          'endDate', ed.end_date,
           'degree', ed.degree,
           'gpa', ed.gpa,
-          'awards_and_honors', ed.awards_and_honors,
+          'awardsAndHonors', ed.awards_and_honors,
           'activities', ed.activities
         )
         ORDER BY dxed.position
@@ -222,8 +216,8 @@ class Document {
           'title', ex.title,
           'organization', ex.organization,
           'location', ex.location,
-          'start_date', ex.start_date,
-          'end_date', ex.end_date,
+          'startDate', ex.start_date,
+          'endDate', ex.end_date,
           'bullets', (
             SELECT json_agg(
               json_build_object(
