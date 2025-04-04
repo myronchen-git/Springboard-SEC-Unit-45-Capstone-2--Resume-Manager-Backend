@@ -2,7 +2,6 @@
 
 const express = require('express');
 
-const document_x_sectionNewSchema = require('../schemas/document_x_sectionNew.json');
 const documentRelationshipPositionsSchema = require('../schemas/documentRelationshipPositions.json');
 const urlParamsSchema = require('../schemas/urlParams.json');
 
@@ -46,7 +45,7 @@ router.get('/sections', async (req, res, next) => {
 });
 
 /**
- * POST /users/:username/documents/:docId/sections/:sectionId
+ * POST /users/:username/documents/:documentId/sections/:sectionId
  * {} => { document_x_section }
  *
  * Authorization required: login
@@ -57,28 +56,27 @@ router.get('/sections', async (req, res, next) => {
  *  position of section within document.
  */
 router.post(
-  '/users/:username/documents/:docId/sections/:sectionId',
+  '/users/:username/documents/:documentId/sections/:sectionId',
   ensureLoggedIn,
   async (req, res, next) => {
     const userPayload = res.locals.user;
+    const { username, documentId, sectionId } = req.params;
 
     const logPrefix =
-      'POST /users/:username/documents/:docId/sections/:sectionId (' +
+      `POST /users/${username}/documents/${documentId}/sections/${sectionId} (` +
       `user: ${JSON.stringify(userPayload)})`;
     logger.info(logPrefix + ' BEGIN');
 
-    const { docId, sectionId } = req.params;
-
     try {
       runJsonSchemaValidator(
-        document_x_sectionNewSchema,
-        { docId, sectionId },
+        urlParamsSchema,
+        { documentId, sectionId },
         logPrefix
       );
 
       const document_x_section = await createDocument_x_section(
         userPayload.username,
-        docId,
+        documentId,
         sectionId
       );
 
