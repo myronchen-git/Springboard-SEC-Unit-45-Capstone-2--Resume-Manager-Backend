@@ -31,8 +31,8 @@ class Document_X_Experience extends Relationship {
    *
    * @param {Object} props - Contains data for creating a new
    *  document_x_experience.
-   * @param {String} props.documentId - ID of the document.
-   * @param {String} props.experienceId - ID of the experience.
+   * @param {Number} props.documentId - ID of the document.
+   * @param {Number} props.experienceId - ID of the experience.
    * @param {Number} props.position - Position of experience among other
    *  experiences in the document.
    * @returns {Document_X_Experience} A new Document_X_Experience instance that

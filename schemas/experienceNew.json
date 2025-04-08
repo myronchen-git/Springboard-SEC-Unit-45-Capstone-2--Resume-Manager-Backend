@@ -1,0 +1,60 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "http://example.com/schemas/experience-new.json",
+  "type": "object",
+  "title": "New Experience",
+  "description": "Required and optional info for creating a new experience.",
+  "required": ["title", "organization", "location", "startDate"],
+  "additionalProperties": false,
+  "properties": {
+    "title": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 500,
+      "examples": ["Software Engineer"]
+    },
+    "organization": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 500,
+      "examples": ["Amazon.com Services"]
+    },
+    "location": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 500,
+      "examples": [
+        "123 Main St., City, State 11111",
+        "123 Main Street, Apartment 2, New York, NY 10001, USA",
+        "5 Oxford Street, London, WC1A 1DP, United Kingdom",
+        "2-1-1 Shinjuku, Shinjuku-ku, Tokyo, 160-0022, Japan",
+        "Lindenstraße 5, 10969 Berlin, German"
+      ]
+    },
+    "startDate": {
+      "type": "string",
+      "pattern": "^\\d{4}\\-(0?[1-9]|1[012])\\-(0?[1-9]|[12][0-9]|3[01])$",
+      "examples": ["2000-01-01"]
+    },
+    "endDate": {
+      "type": "string",
+      "pattern": "^\\d{4}\\-(0?[1-9]|1[012])\\-(0?[1-9]|[12][0-9]|3[01])$",
+      "examples": ["2000-01-01"]
+    }
+  },
+  "examples": [
+    {
+      "title": "Software Engineer",
+      "organization": "Amazon.com Services",
+      "location": "123 Main St., City, State 11111",
+      "startDate": "2000-01-01"
+    },
+    {
+      "title": "Software Engineer",
+      "organization": "Amazon.com Services",
+      "location": "123 Main St., City, State 11111",
+      "startDate": "2000-01-01",
+      "endDate": "2004-12-31"
+    }
+  ]
+}
