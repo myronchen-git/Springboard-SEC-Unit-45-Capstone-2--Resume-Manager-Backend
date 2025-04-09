@@ -8,7 +8,8 @@
   "anyOf": [
     { "title": "Document ID format", "required": ["documentId"] },
     { "title": "Section ID format", "required": ["sectionId"] },
-    { "title": "Education ID format", "required": ["educationId"] }
+    { "title": "Education ID format", "required": ["educationId"] },
+    { "title": "Experience ID format", "required": ["experienceId"] }
   ],
   "properties": {
     "documentId": {
@@ -22,6 +23,11 @@
       "examples": ["1"]
     },
     "educationId": {
+      "type": "string",
+      "pattern": "^\\d+$",
+      "examples": ["1"]
+    },
+    "experienceId": {
       "type": "string",
       "pattern": "^\\d+$",
       "examples": ["1"]

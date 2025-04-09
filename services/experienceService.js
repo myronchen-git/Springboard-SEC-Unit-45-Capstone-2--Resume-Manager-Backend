@@ -11,7 +11,7 @@ const {
   getLastPosition,
 } = require('../util/serviceHelpers');
 
-const { ForbiddenError } = require('../errors/appErrors');
+const { BadRequestError, ForbiddenError } = require('../errors/appErrors');
 
 const logger = require('../util/logger');
 
@@ -85,8 +85,61 @@ async function createExperience(username, documentId, props) {
   return { experience, document_x_experience };
 }
 
+/**
+ * Creates a document_x_experience record (document-experience relationship) in
+ * the database.  Experience and document ownership are verified, then the next
+ * position is found by getting all document_x_experience records.
+ *
+ * @param {String} username - Name of user that wants to interact with the
+ *  document.  This should be the owner.
+ * @param {Number} documentId - ID of the document that is having an experience
+ *  attach to it.
+ * @param {Number} experienceId - ID of the experience to attach to the
+ *  document.
+ * @returns {Document_X_Experience} A Document_X_Experience instance that
+ *  contains the document-experience relationship data.
+ */
+async function createDocument_x_experience(username, documentId, experienceId) {
+  const logPrefix =
+    `${fileName}.createDocument_x_experience(` +
+    `username = "${username}", ` +
+    `documentId = ${documentId}, ` +
+    `experienceId = ${experienceId})`;
+  logger.verbose(logPrefix);
+
+  // Verify ownership.
+  await validateOwnership(Experience, username, experienceId, logPrefix);
+  await validateOwnership(Document, username, documentId, logPrefix);
+
+  // Find next proper position to place experience in.
+  const documents_x_experiences = await Document_X_Experience.getAll(
+    documentId
+  );
+  const nextPosition = getLastPosition(documents_x_experiences) + 1;
+
+  // Add relationship.
+  try {
+    return await Document_X_Experience.add({
+      documentId,
+      experienceId,
+      position: nextPosition,
+    });
+  } catch (err) {
+    // PostgreSQL error code 23505 is for unique constraint violation.
+    if (err.code === '23505') {
+      logger.error(`${logPrefix}: Relationship already exists.`);
+      throw new BadRequestError(
+        'Can not add experience to document, as it already exists.'
+      );
+    } else {
+      throw err;
+    }
+  }
+}
+
 // ==================================================
 
 module.exports = {
   createExperience,
+  createDocument_x_experience,
 };

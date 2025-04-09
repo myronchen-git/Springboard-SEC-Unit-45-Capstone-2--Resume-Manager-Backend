@@ -106,7 +106,7 @@ router.post(
  * the document will be after the last position of any existing educations.
  *
  * @returns {{document_x_education}} The document ID, education ID, and position
- * of education within the document.
+ *  of education within the document.
  */
 router.post(
   '/:username/documents/:documentId/educations/:educationId',

@@ -6,7 +6,10 @@ const urlParamsSchema = require('../schemas/urlParams.json');
 const experienceNewSchema = require('../schemas/experienceNew.json');
 
 const Experience = require('../models/experience');
-const { createExperience } = require('../services/experienceService');
+const {
+  createExperience,
+  createDocument_x_experience,
+} = require('../services/experienceService');
 const { ensureLoggedIn } = require('../middleware/auth');
 const { runJsonSchemaValidator } = require('../util/validators');
 
@@ -80,6 +83,78 @@ router.post(
     }
   }
 );
+
+/**
+ * POST /users/:username/documents/:documentId/experiences/:experienceId
+ * {} => { document_x_experience }
+ *
+ * Authorization required: login
+ *
+ * Creates a document-experience relationship.  The position of the experience
+ * in the document will be after the last position of any existing experiences.
+ *
+ * @returns {{document_x_experience}} The ID of the document_x_experience,
+ *  document ID, experience ID, and position of experience within the document.
+ */
+router.post(
+  '/:username/documents/:documentId/experiences/:experienceId',
+  ensureLoggedIn,
+  async (req, res, next) => {
+    const userPayload = res.locals.user;
+    const { username, documentId, experienceId } = req.params;
+
+    const logPrefix =
+      `POST /users/${username}/documents/${documentId}/experiences/${experienceId} ` +
+      `(user: ${JSON.stringify(userPayload)})`;
+    logger.info(logPrefix + ' BEGIN');
+
+    try {
+      runJsonSchemaValidator(
+        urlParamsSchema,
+        { documentId, experienceId },
+        logPrefix
+      );
+
+      const document_x_experience = await createDocument_x_experience(
+        userPayload.username,
+        documentId,
+        experienceId
+      );
+
+      return res.status(201).json({ document_x_experience });
+    } catch (err) {
+      return next(err);
+    }
+  }
+);
+
+/**
+ * GET /users/:username/experiences
+ * {} => { experiences }
+ *
+ * Authorization required: login
+ *
+ * Gets all experiences for a user.
+ *
+ * @returns {{ experiences }} A list of experiences that a user has.
+ */
+router.get('/:username/experiences', ensureLoggedIn, async (req, res, next) => {
+  const userPayload = res.locals.user;
+  const { username } = req.params;
+
+  const logPrefix =
+    `GET /users/${username}/experiences ` +
+    `(user: ${JSON.stringify(userPayload)})`;
+  logger.info(logPrefix + ' BEGIN');
+
+  try {
+    const experiences = await Experience.getAll(userPayload.username);
+
+    return res.json({ experiences });
+  } catch (err) {
+    return next(err);
+  }
+});
 
 // ==================================================
 

@@ -11,8 +11,7 @@ const {
   getLastPosition,
 } = require('../util/serviceHelpers');
 
-const { BadRequestError } = require('../errors/appErrors');
-const { ForbiddenError } = require('../errors/appErrors');
+const { BadRequestError, ForbiddenError } = require('../errors/appErrors');
 
 const logger = require('../util/logger');
 
