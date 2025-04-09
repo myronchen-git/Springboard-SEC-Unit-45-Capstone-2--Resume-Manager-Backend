@@ -137,9 +137,58 @@ async function createDocument_x_experience(username, documentId, experienceId) {
   }
 }
 
+/**
+ * Deletes a document-experience relationship.  Document ownership is first
+ * verified.
+ *
+ * @param {String} username - Name of user that wants to delete the
+ *  document-experience relationship.  This should be the owner.
+ * @param {Number} documentId - ID of the document to remove the experience
+ *  from.
+ * @param {Number} experienceId - ID of the experience to be removed.
+ */
+async function deleteDocument_x_experience(username, documentId, experienceId) {
+  const logPrefix =
+    `${fileName}.deleteDocument_x_experience(` +
+    `username = "${username}", ` +
+    `documentId = ${documentId}, ` +
+    `experienceId = ${experienceId})`;
+  logger.verbose(logPrefix);
+
+  await validateOwnership(Document, username, documentId, logPrefix);
+
+  await Document_X_Experience.delete(documentId, experienceId);
+}
+
+/**
+ * Deletes an experience.
+ *
+ * @param {String} username - Name of user that wants to delete the experience.
+ *  This should be the owner.
+ * @param {Number} experienceId - ID of the experience to be deleted.
+ */
+async function deleteExperience(username, experienceId) {
+  const logPrefix =
+    `${fileName}.deleteExperience(` +
+    `username = "${username}", ` +
+    `experienceId = ${experienceId})`;
+  logger.verbose(logPrefix);
+
+  const experience = await validateOwnership(
+    Experience,
+    username,
+    experienceId,
+    logPrefix
+  );
+
+  await experience.delete();
+}
+
 // ==================================================
 
 module.exports = {
   createExperience,
   createDocument_x_experience,
+  deleteDocument_x_experience,
+  deleteExperience,
 };

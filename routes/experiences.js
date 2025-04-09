@@ -9,6 +9,8 @@ const Experience = require('../models/experience');
 const {
   createExperience,
   createDocument_x_experience,
+  deleteDocument_x_experience,
+  deleteExperience,
 } = require('../services/experienceService');
 const { ensureLoggedIn } = require('../middleware/auth');
 const { runJsonSchemaValidator } = require('../util/validators');
@@ -155,6 +157,79 @@ router.get('/:username/experiences', ensureLoggedIn, async (req, res, next) => {
     return next(err);
   }
 });
+
+/**
+ * DELETE /users/:username/documents/:documentId/experiences/:experienceId
+ * {} => {}
+ *
+ * Authorization required: login
+ *
+ * Deletes a document-experience relationship.
+ */
+router.delete(
+  '/:username/documents/:documentId/experiences/:experienceId',
+  ensureLoggedIn,
+  async (req, res, next) => {
+    const userPayload = res.locals.user;
+
+    const { username, documentId, experienceId } = req.params;
+
+    const logPrefix =
+      `DELETE /users/${username}/documents/${documentId}/experiences/${experienceId} ` +
+      `(user: ${JSON.stringify(userPayload)})`;
+    logger.info(logPrefix + ' BEGIN');
+
+    try {
+      runJsonSchemaValidator(
+        urlParamsSchema,
+        { documentId, experienceId },
+        logPrefix
+      );
+
+      await deleteDocument_x_experience(
+        userPayload.username,
+        documentId,
+        experienceId
+      );
+
+      return res.sendStatus(200);
+    } catch (err) {
+      return next(err);
+    }
+  }
+);
+
+/**
+ * DELETE /users/:username/experiences/:experienceId
+ * {} => {}
+ *
+ * Authorization required: login
+ *
+ * Deletes an experience.
+ */
+router.delete(
+  '/:username/experiences/:experienceId',
+  ensureLoggedIn,
+  async (req, res, next) => {
+    const userPayload = res.locals.user;
+    const { username, experienceId } = req.params;
+
+    const logPrefix =
+      `DELETE /users/${username}/experiences/${experienceId} ` +
+      `(user: ${JSON.stringify(userPayload)})`;
+    logger.info(logPrefix + ' BEGIN');
+
+    try {
+      runJsonSchemaValidator(urlParamsSchema, { experienceId }, logPrefix);
+
+      await deleteExperience(userPayload.username, experienceId);
+
+      return res.sendStatus(200);
+    } catch (err) {
+      return next(err);
+    }
+  }
+);
 
 // ==================================================
 
