@@ -6,6 +6,8 @@ const fileName = path.basename(__filename, '.js');
 const Document = require('../models/document');
 const Experience = require('../models/experience');
 const Document_X_Experience = require('../models/document_x_experience');
+const TextSnippet = require('../models/textSnippet');
+const Experience_X_Text_Snippet = require('../models/experience_x_text_snippet');
 const {
   validateOwnership,
   getLastPosition,
@@ -184,6 +186,91 @@ async function deleteExperience(username, experienceId) {
   await experience.delete();
 }
 
+/**
+ * Creates a text snippet and experience-text snippet relationship entry in the
+ * database.  The new text snippet will be positioned after the last, or highest
+ * value position, text snippet in the document.
+ *
+ * Note that, currently, text snippets can only be added to experiences in the
+ * master resume. This can be changed in the future.
+ *
+ * Document and experience ownerships are first verified.
+ *
+ * @param {String} username - Name of user that wants to add a text snippet to
+ *  the experience and document.
+ * @param {Number} documentId - ID of the document that the associated
+ *  experience is in.
+ * @param {Number} experienceId - ID of the experience that is being attached
+ *  with a text snippet.
+ * @param {Object} props - Properties of the text snippet to add.
+ * @throws {ForbiddenError} If the document is not the master resume.
+ * @returns {{
+ *    textSnippet: TextSnippet,
+ *    experienceXTextSnippet: Experience_X_Text_Snippet
+ *  }}
+ *  textSnippet - Text snippet ID, version, owner, parent, type, and content.
+ *  experienceXTextSnippet - The document-experience ID that owns the text
+ *  snippet, text snippet ID, version of the text snippet, and position of the
+ *  text snippet among other text snippets in the experience and document.
+ */
+async function createTextSnippet(username, documentId, experienceId, props) {
+  const logPrefix =
+    `${fileName}.createTextSnippet(` +
+    `username = "${username}", ` +
+    `documentId = ${documentId}, ` +
+    `experienceId = ${experienceId}, ` +
+    `props = ${JSON.stringify(props)})`;
+  logger.verbose(logPrefix);
+
+  // Verify document ownership.
+  const document = await validateOwnership(
+    Document,
+    username,
+    documentId,
+    logPrefix
+  );
+
+  // Checking if document is master.
+  if (!document.isMaster) {
+    logger.error(
+      `${logPrefix}: User attempted to add a text snippet ` +
+        'not to the master resume.'
+    );
+    throw new ForbiddenError(
+      'Text snippet can only be added to the master resume.'
+    );
+  }
+
+  // Verify experience ownership.
+  await validateOwnership(Experience, username, experienceId, logPrefix);
+
+  // Create text snippet.
+  const textSnippet = await TextSnippet.add({ ...props, owner: username });
+
+  // Creating relationship to master ...
+
+  // Find the document-experience relationship ID.
+  const documentXExperienceId = (
+    await Document_X_Experience.get({ documentId, experienceId })
+  ).id;
+
+  // Find next position.
+  const experiencesXTextSnippets = await Experience_X_Text_Snippet.getAll(
+    documentXExperienceId
+  );
+  const nextPosition = getLastPosition(experiencesXTextSnippets) + 1;
+
+  // Create experience-text snippet relationship.
+  const experienceXTextSnippet = await Experience_X_Text_Snippet.add({
+    documentXExperienceId,
+    textSnippetId: textSnippet.id,
+    textSnippetVersion: textSnippet.version,
+    position: nextPosition,
+  });
+
+  return { textSnippet, experienceXTextSnippet };
+}
+
 // ==================================================
 
 module.exports = {
@@ -191,4 +278,5 @@ module.exports = {
   createDocument_x_experience,
   deleteDocument_x_experience,
   deleteExperience,
+  createTextSnippet,
 };

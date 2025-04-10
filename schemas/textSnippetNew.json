@@ -1,0 +1,26 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "http://example.com/schemas/text-snippet-new.json",
+  "type": "object",
+  "title": "New Text Snippet",
+  "description": "Required and optional info for creating a new text snippet.",
+  "required": ["type", "content"],
+  "additionalProperties": false,
+  "properties": {
+    "type": {
+      "type": "string",
+      "examples": ["plain"]
+    },
+    "content": {
+      "type": "string",
+      "minLength": 5,
+      "examples": ["Wrote code using JavaScript on React framework ...."]
+    }
+  },
+  "examples": [
+    {
+      "type": "plain",
+      "content": "Wrote code using JavaScript on React framework ...."
+    }
+  ]
+}

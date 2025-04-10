@@ -4,6 +4,7 @@ const express = require('express');
 
 const urlParamsSchema = require('../schemas/urlParams.json');
 const experienceNewSchema = require('../schemas/experienceNew.json');
+const textSnippetNewSchema = require('../schemas/textSnippetNew.json');
 
 const Experience = require('../models/experience');
 const {
@@ -11,6 +12,7 @@ const {
   createDocument_x_experience,
   deleteDocument_x_experience,
   deleteExperience,
+  createTextSnippet,
 } = require('../services/experienceService');
 const { ensureLoggedIn } = require('../middleware/auth');
 const { runJsonSchemaValidator } = require('../util/validators');
@@ -225,6 +227,65 @@ router.delete(
       await deleteExperience(userPayload.username, experienceId);
 
       return res.sendStatus(200);
+    } catch (err) {
+      return next(err);
+    }
+  }
+);
+
+/**
+ * POST /:username/documents/:documentId/experiences/:experienceId/text-snippets
+ *
+ * { type, content } => { textSnippet, experienceXTextSnippet }
+ *
+ * Authorization required: login
+ *
+ * Creates a text snippet entry and a relationship between the entry and the
+ * experience and document.
+ *
+ * Note that, currently, text snippets can only be added to experiences in the
+ * master resume. This can be changed in the future.
+ *
+ * @param {String} type - The type of content, such as bullet point or
+ *  description.
+ * @param {String} content - Content of the text snippet.
+ * @returns {{
+ *    textSnippet: TextSnippet,
+ *    experienceXTextSnippet: Experience_X_Text_Snippet
+ *  }}
+ *  textSnippet - Text snippet ID, version, owner, parent, type, and content.
+ *  experienceXTextSnippet - The document-experience ID that owns the text
+ *  snippet, text snippet ID, version of the text snippet, and position of the
+ *  text snippet among other text snippets in the experience and document.
+ */
+router.post(
+  '/:username/documents/:documentId/experiences/:experienceId/text-snippets',
+  ensureLoggedIn,
+  async (req, res, next) => {
+    const userPayload = res.locals.user;
+    const { username, documentId, experienceId } = req.params;
+
+    const logPrefix =
+      `POST /users/${username}/documents/${documentId}/experiences/${experienceId}/text-snippets ` +
+      `(user: ${JSON.stringify(userPayload)})`;
+    logger.info(logPrefix + ' BEGIN');
+
+    try {
+      runJsonSchemaValidator(
+        urlParamsSchema,
+        { documentId, experienceId },
+        logPrefix
+      );
+      runJsonSchemaValidator(textSnippetNewSchema, req.body, logPrefix);
+
+      const { textSnippet, experienceXTextSnippet } = await createTextSnippet(
+        userPayload.username,
+        documentId,
+        experienceId,
+        req.body
+      );
+
+      return res.status(201).json({ textSnippet, experienceXTextSnippet });
     } catch (err) {
       return next(err);
     }
