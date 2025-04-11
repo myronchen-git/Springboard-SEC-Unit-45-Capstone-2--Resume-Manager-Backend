@@ -271,6 +271,27 @@ async function createTextSnippet(username, documentId, experienceId, props) {
   return { textSnippet, experienceXTextSnippet };
 }
 
+/**
+ * Gets all text snippets for a specified experience from a user.
+ *
+ * Experience ownership is first verified.
+ *
+ * @param {String} username - Name of the user to get text snippets for.
+ * @param {Number} experienceId - ID of the experience to get text snippets for.
+ * @returns {TextSnippet[]} A list of text snippets belonging to an experience.
+ */
+async function getTextSnippets(username, experienceId) {
+  const logPrefix =
+    `${fileName}.getTextSnippets(` +
+    `username = "${username}", ` +
+    `experienceId = ${experienceId})`;
+  logger.verbose(logPrefix);
+
+  await validateOwnership(Experience, username, experienceId, logPrefix);
+
+  return await TextSnippet.getAllForExperience(username, experienceId);
+}
+
 // ==================================================
 
 module.exports = {
@@ -279,4 +300,5 @@ module.exports = {
   deleteDocument_x_experience,
   deleteExperience,
   createTextSnippet,
+  getTextSnippets,
 };

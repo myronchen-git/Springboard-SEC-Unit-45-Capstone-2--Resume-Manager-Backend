@@ -2,6 +2,9 @@
 
 const db = require('../database/db');
 
+const Document_X_Experience = require('./document_x_experience');
+const Experience_X_Text_Snippet = require('./experience_x_text_snippet');
+
 const { AppServerError, NotFoundError } = require('../errors/appErrors');
 
 const logger = require('../util/logger');
@@ -26,6 +29,21 @@ class TextSnippet {
     type,
     content`;
 
+  // To help with SQL joins.  Unfortunately, existing code uses _allDbColsAsJs,
+  // so this separate, redundant piece of code will have to exist like this for
+  // now.
+  static #allDbColsAsJs = (alias = '') => {
+    alias &&= alias + '.';
+
+    return `
+    ${alias}id,
+    ${alias}version,
+    ${alias}owner,
+    ${alias}parent,
+    ${alias}type,
+    ${alias}content`;
+  };
+
   constructor(id, version, owner, parent, type, content) {
     this.id = id;
     this.version = version;
@@ -47,7 +65,7 @@ class TextSnippet {
    *  text snippet's data.
    */
   static async add(props) {
-    const logPrefix = `TextSnippet.add(${JSON.stringify(props)})`;
+    const logPrefix = `${this.name}.add(${JSON.stringify(props)})`;
     logger.verbose(logPrefix);
 
     // Allowed properties/attributes.
@@ -73,7 +91,7 @@ class TextSnippet {
    * @returns {TextSnippet[]} A list of TextSnippet instances.
    */
   static async getAll(owner) {
-    const logPrefix = `TextSnippet.getAll(${owner})`;
+    const logPrefix = `${this.name}.getAll(${owner})`;
     logger.verbose(logPrefix);
 
     const queryConfig = {
@@ -82,6 +100,39 @@ class TextSnippet {
   FROM ${TextSnippet.tableName}
   WHERE owner = $1;`,
       values: [owner],
+    };
+
+    const result = await db.query({ queryConfig, logPrefix });
+
+    return result.rows.map((data) => new TextSnippet(...Object.values(data)));
+  }
+
+  /**
+   * Gets all text snippets for a specified experience from a user.
+   *
+   * @param {String} owner - Name of the user to get text snippets for.
+   * @param {Number} experienceId - ID of the experience to get text snippets
+   *  for.
+   * @returns {TextSnippet[]} A list of text snippets belonging to an
+   *  experience.
+   */
+  static async getAllForExperience(owner, experienceId) {
+    const logPrefix =
+      `${this.name}.getAllForExperience(` +
+      `owner = ${owner}, ` +
+      `experienceId = ${experienceId})`;
+    logger.verbose(logPrefix);
+
+    const queryConfig = {
+      text: `
+  SELECT DISTINCT ${TextSnippet.#allDbColsAsJs('t')}
+  FROM ${TextSnippet.tableName} AS t
+  JOIN ${Experience_X_Text_Snippet.tableName} AS ext
+  ON t.id = ext.text_snippet_id AND t.version = ext.text_snippet_version
+  JOIN ${Document_X_Experience.tableName} AS dxe
+  ON ext.document_x_experience_id = dxe.id
+  WHERE t.owner = $1 AND dxe.experience_id = $2;`,
+      values: [owner, experienceId],
     };
 
     const result = await db.query({ queryConfig, logPrefix });
@@ -100,7 +151,7 @@ class TextSnippet {
    *  snippet's data.
    */
   static async get(queryParams) {
-    const logPrefix = `TextSnippet.get(${JSON.stringify(queryParams)})`;
+    const logPrefix = `${this.name}.get(${JSON.stringify(queryParams)})`;
     logger.verbose(logPrefix);
 
     // Allowed parameters.
@@ -140,7 +191,7 @@ class TextSnippet {
    *  snippet.
    */
   async update(props) {
-    const logPrefix = `TextSnippet.update(${JSON.stringify(props)})`;
+    const logPrefix = `${this.name}.update(${JSON.stringify(props)})`;
     logger.verbose(logPrefix);
 
     // If given no arguments, return.
@@ -196,7 +247,7 @@ class TextSnippet {
    * longer exists.
    */
   async delete() {
-    const logPrefix = `TextSnippet.delete()`;
+    const logPrefix = `${this.name}.delete()`;
     logger.verbose(logPrefix);
 
     const queryConfig = {

@@ -13,6 +13,7 @@ const {
   deleteDocument_x_experience,
   deleteExperience,
   createTextSnippet,
+  getTextSnippets,
 } = require('../services/experienceService');
 const { ensureLoggedIn } = require('../middleware/auth');
 const { runJsonSchemaValidator } = require('../util/validators');
@@ -235,7 +236,6 @@ router.delete(
 
 /**
  * POST /:username/documents/:documentId/experiences/:experienceId/text-snippets
- *
  * { type, content } => { textSnippet, experienceXTextSnippet }
  *
  * Authorization required: login
@@ -286,6 +286,43 @@ router.post(
       );
 
       return res.status(201).json({ textSnippet, experienceXTextSnippet });
+    } catch (err) {
+      return next(err);
+    }
+  }
+);
+
+/**
+ * GET /:username/experiences/:experienceId/text-snippets
+ * {} => { textSnippets }
+ *
+ * Authorization required: login
+ *
+ * Gets all the text snippets for an experience from a user.
+ *
+ * @returns {{ textSnippets }} A list of text snippets that an experience has.
+ */
+router.get(
+  '/:username/experiences/:experienceId/text-snippets',
+  ensureLoggedIn,
+  async (req, res, next) => {
+    const userPayload = res.locals.user;
+    const { username, experienceId } = req.params;
+
+    const logPrefix =
+      `GET /users/${username}/experiences/${experienceId}/text-snippets ` +
+      `(user: ${JSON.stringify(userPayload)})`;
+    logger.info(logPrefix + ' BEGIN');
+
+    try {
+      runJsonSchemaValidator(urlParamsSchema, { experienceId }, logPrefix);
+
+      const textSnippets = await getTextSnippets(
+        userPayload.username,
+        experienceId
+      );
+
+      return res.json({ textSnippets });
     } catch (err) {
       return next(err);
     }
