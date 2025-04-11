@@ -54,7 +54,7 @@ async function createExperience(username, documentId, props) {
   const document = await validateOwnership(
     Document,
     username,
-    documentId,
+    { id: documentId },
     logPrefix
   );
 
@@ -110,8 +110,13 @@ async function createDocument_x_experience(username, documentId, experienceId) {
   logger.verbose(logPrefix);
 
   // Verify ownership.
-  await validateOwnership(Experience, username, experienceId, logPrefix);
-  await validateOwnership(Document, username, documentId, logPrefix);
+  await validateOwnership(
+    Experience,
+    username,
+    { id: experienceId },
+    logPrefix
+  );
+  await validateOwnership(Document, username, { id: documentId }, logPrefix);
 
   // Find next proper position to place experience in.
   const documents_x_experiences = await Document_X_Experience.getAll(
@@ -157,7 +162,7 @@ async function deleteDocument_x_experience(username, documentId, experienceId) {
     `experienceId = ${experienceId})`;
   logger.verbose(logPrefix);
 
-  await validateOwnership(Document, username, documentId, logPrefix);
+  await validateOwnership(Document, username, { id: documentId }, logPrefix);
 
   await Document_X_Experience.delete(documentId, experienceId);
 }
@@ -179,7 +184,7 @@ async function deleteExperience(username, experienceId) {
   const experience = await validateOwnership(
     Experience,
     username,
-    experienceId,
+    { id: experienceId },
     logPrefix
   );
 
@@ -226,7 +231,7 @@ async function createTextSnippet(username, documentId, experienceId, props) {
   const document = await validateOwnership(
     Document,
     username,
-    documentId,
+    { id: documentId },
     logPrefix
   );
 
@@ -242,7 +247,12 @@ async function createTextSnippet(username, documentId, experienceId, props) {
   }
 
   // Verify experience ownership.
-  await validateOwnership(Experience, username, experienceId, logPrefix);
+  await validateOwnership(
+    Experience,
+    username,
+    { id: experienceId },
+    logPrefix
+  );
 
   // Create text snippet.
   const textSnippet = await TextSnippet.add({ ...props, owner: username });
@@ -287,7 +297,12 @@ async function getTextSnippets(username, experienceId) {
     `experienceId = ${experienceId})`;
   logger.verbose(logPrefix);
 
-  await validateOwnership(Experience, username, experienceId, logPrefix);
+  await validateOwnership(
+    Experience,
+    username,
+    { id: experienceId },
+    logPrefix
+  );
 
   return await TextSnippet.getAllForExperience(username, experienceId);
 }

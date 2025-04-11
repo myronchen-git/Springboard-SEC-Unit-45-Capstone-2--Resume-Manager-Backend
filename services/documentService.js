@@ -33,7 +33,7 @@ async function getDocument(username, documentId) {
     `documentId = ${documentId})`;
   logger.verbose(logPrefix);
 
-  await validateOwnership(Document, username, documentId, logPrefix);
+  await validateOwnership(Document, username, { id: documentId }, logPrefix);
 
   return await Document.getDocumentAndSectionContent(documentId);
 }

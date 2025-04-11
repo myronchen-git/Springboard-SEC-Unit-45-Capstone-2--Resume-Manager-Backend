@@ -82,7 +82,7 @@ describe('validateOwnership', () => {
     const returnedObject = await validateOwnership(
       mockClass,
       username,
-      itemId,
+      { id: itemId },
       ''
     );
 
@@ -99,7 +99,7 @@ describe('validateOwnership', () => {
 
     // Act
     async function runFunc() {
-      await validateOwnership(mockClass, username, itemId, '');
+      await validateOwnership(mockClass, username, { id: itemId }, '');
     }
 
     // Assert

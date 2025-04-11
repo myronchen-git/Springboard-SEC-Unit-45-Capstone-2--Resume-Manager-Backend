@@ -45,13 +45,14 @@ async function validateDocumentOwner(username, documentId, logPrefix) {
  *
  * @param {Class} modelClass - The JS class of the item.
  * @param {String} username - Name of the user that wants access.
- * @param {Number} id - ID of the relevant item that is being accessed.
+ * @param {Object} idOrOthers - ID or other relevant identifications of the
+ *  relevant item that is being accessed.
  * @param {String} logPrefix - Log text to put in front of any logs.
  * @returns {Object} The relevant model Object, containing the retrieved data.
  * @throws {ForbiddenError} If the item does not belong to the user.
  */
-async function validateOwnership(modelClass, username, id, logPrefix) {
-  const object = await modelClass.get({ id });
+async function validateOwnership(modelClass, username, idOrOthers, logPrefix) {
+  const object = await modelClass.get(idOrOthers);
 
   if (object.owner !== username) {
     logger.error(

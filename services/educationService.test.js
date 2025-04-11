@@ -73,7 +73,7 @@ describe('createEducation', () => {
       expect(mockValidateOwnership).toHaveBeenCalledWith(
         Document,
         username,
-        documentId,
+        { id: documentId },
         expect.any(String)
       );
 
@@ -198,7 +198,7 @@ describe('createDocument_x_education', () => {
         1,
         Education,
         username,
-        educationIdToAdd,
+        { id: educationIdToAdd },
         expect.any(String)
       );
 
@@ -206,7 +206,7 @@ describe('createDocument_x_education', () => {
         2,
         Document,
         username,
-        documentId,
+        { id: documentId },
         expect.any(String)
       );
 
@@ -257,7 +257,7 @@ describe('createDocument_x_education', () => {
         1,
         Education,
         username,
-        educationIdToAdd,
+        { id: educationIdToAdd },
         expect.any(String)
       );
 
@@ -265,7 +265,7 @@ describe('createDocument_x_education', () => {
         2,
         Document,
         username,
-        documentId,
+        { id: documentId },
         expect.any(String)
       );
 
@@ -331,7 +331,7 @@ describe('updateEducation', () => {
       1,
       Education,
       username,
-      educationId,
+      { id: educationId },
       expect.any(String)
     );
 
@@ -339,7 +339,7 @@ describe('updateEducation', () => {
       2,
       Document,
       username,
-      documentId,
+      { id: documentId },
       expect.any(String)
     );
 
@@ -372,7 +372,7 @@ describe('updateEducation', () => {
       1,
       Education,
       username,
-      educationId,
+      { id: educationId },
       expect.any(String)
     );
 
@@ -380,7 +380,7 @@ describe('updateEducation', () => {
       2,
       Document,
       username,
-      documentId,
+      { id: documentId },
       expect.any(String)
     );
 

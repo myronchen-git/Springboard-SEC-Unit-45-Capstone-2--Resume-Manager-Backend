@@ -52,7 +52,7 @@ async function createEducation(username, documentId, props) {
   const document = await validateOwnership(
     Document,
     username,
-    documentId,
+    { id: documentId },
     logPrefix
   );
 
@@ -104,8 +104,8 @@ async function createDocument_x_education(username, documentId, educationId) {
   logger.verbose(logPrefix);
 
   // Verify ownership.
-  await validateOwnership(Education, username, educationId, logPrefix);
-  await validateOwnership(Document, username, documentId, logPrefix);
+  await validateOwnership(Education, username, { id: educationId }, logPrefix);
+  await validateOwnership(Document, username, { id: documentId }, logPrefix);
 
   // Find next proper position to place education in.
   const documents_x_educations = await Document_X_Education.getAll(documentId);
@@ -158,13 +158,13 @@ async function updateEducation(username, documentId, educationId, props) {
   const education = await validateOwnership(
     Education,
     username,
-    educationId,
+    { id: educationId },
     logPrefix
   );
   const document = await validateOwnership(
     Document,
     username,
-    documentId,
+    { id: documentId },
     logPrefix
   );
 
@@ -205,7 +205,7 @@ async function updateDocument_x_educationPositions(
     `educationIds = ${educationIds})`;
   logger.verbose(logPrefix);
 
-  await validateOwnership(Document, username, documentId, logPrefix);
+  await validateOwnership(Document, username, { id: documentId }, logPrefix);
 
   // Verify that educationIds contains all of the educations in the document.
   const documents_x_educations = await Document_X_Education.getAll(documentId);
@@ -247,7 +247,7 @@ async function deleteDocument_x_education(username, documentId, educationId) {
     `educationId = ${educationId})`;
   logger.verbose(logPrefix);
 
-  await validateOwnership(Document, username, documentId, logPrefix);
+  await validateOwnership(Document, username, { id: documentId }, logPrefix);
 
   await Document_X_Education.delete(documentId, educationId);
 }
@@ -269,7 +269,7 @@ async function deleteEducation(username, educationId) {
   const education = await validateOwnership(
     Education,
     username,
-    educationId,
+    { id: educationId },
     logPrefix
   );
 
