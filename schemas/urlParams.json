@@ -9,7 +9,8 @@
     { "title": "Document ID format", "required": ["documentId"] },
     { "title": "Section ID format", "required": ["sectionId"] },
     { "title": "Education ID format", "required": ["educationId"] },
-    { "title": "Experience ID format", "required": ["experienceId"] }
+    { "title": "Experience ID format", "required": ["experienceId"] },
+    { "title": "Text snippet ID format", "required": ["textSnippetId"] }
   ],
   "properties": {
     "documentId": {
@@ -28,6 +29,11 @@
       "examples": ["1"]
     },
     "experienceId": {
+      "type": "string",
+      "pattern": "^\\d+$",
+      "examples": ["1"]
+    },
+    "textSnippetId": {
       "type": "string",
       "pattern": "^\\d+$",
       "examples": ["1"]

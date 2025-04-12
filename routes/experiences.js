@@ -5,6 +5,7 @@ const express = require('express');
 const urlParamsSchema = require('../schemas/urlParams.json');
 const experienceNewSchema = require('../schemas/experienceNew.json');
 const textSnippetNewSchema = require('../schemas/textSnippetNew.json');
+const textSnippetVersionSchema = require('../schemas/textSnippetVersion.json');
 
 const Experience = require('../models/experience');
 const {
@@ -14,6 +15,7 @@ const {
   deleteExperience,
   createTextSnippet,
   getTextSnippets,
+  createExperience_x_textSnippet,
 } = require('../services/experienceService');
 const { ensureLoggedIn } = require('../middleware/auth');
 const { runJsonSchemaValidator } = require('../util/validators');
@@ -286,6 +288,68 @@ router.post(
       );
 
       return res.status(201).json({ textSnippet, experienceXTextSnippet });
+    } catch (err) {
+      return next(err);
+    }
+  }
+);
+
+/**
+ * POST /:username/documents/:documentId/experiences/:experienceId
+ * /text-snippets/:textSnippetId
+ * { textSnippetVersion } => { experienceXTextSnippet }
+ *
+ * Authorization required: login
+ *
+ * Creates an experience-text snippet relationship.  The position of the text
+ * snippet in the experience will be after the last position of any existing
+ * text snippets.
+ *
+ * Document ID is needed, because the display of an experience and its contents
+ * is specific to a document.
+ *
+ * @param {String} textSnippetVersion - Version part of the text snippet.
+ * @returns {{experienceXTextSnippet}} The experience_x_textSnippet Object,
+ *  which contains the ID of the document_x_experience, text snippet ID and
+ *  version, and position of the text snippet within the experience.
+ */
+router.post(
+  '/:username/documents/:documentId/experiences/:experienceId' +
+    '/text-snippets/:textSnippetId',
+  ensureLoggedIn,
+  async (req, res, next) => {
+    const userPayload = res.locals.user;
+    const { username, documentId, experienceId, textSnippetId } = req.params;
+    const { textSnippetVersion } = req.body;
+
+    const logPrefix =
+      `POST /users/${username}/documents/${documentId}` +
+      `/experiences/${experienceId}/text-snippets/${textSnippetId} ` +
+      `(user: ${JSON.stringify(userPayload)}, ` +
+      `request body: ${JSON.stringify(req.body)})`;
+    logger.info(logPrefix + ' BEGIN');
+
+    try {
+      runJsonSchemaValidator(
+        urlParamsSchema,
+        { documentId, experienceId, textSnippetId },
+        logPrefix
+      );
+      runJsonSchemaValidator(
+        textSnippetVersionSchema,
+        textSnippetVersion,
+        logPrefix
+      );
+
+      const experienceXTextSnippet = await createExperience_x_textSnippet(
+        username,
+        documentId,
+        experienceId,
+        textSnippetId,
+        textSnippetVersion
+      );
+
+      return res.json({ experienceXTextSnippet });
     } catch (err) {
       return next(err);
     }

@@ -307,6 +307,81 @@ async function getTextSnippets(username, experienceId) {
   return await TextSnippet.getAllForExperience(username, experienceId);
 }
 
+/**
+ * Verifies document, experience, and text snippet ownership and creates an
+ * experience-text snippet relationship in the database.  The new text snippet
+ * will be positioned after the last, or highest value position, text snippet in
+ * the document.
+ *
+ * Note that, text snippets can only be attached to experiences not in the
+ * master resume, because currently, only text snippets can be added to the
+ * master, which results in a relationship already being created in the master.
+ * It would also not make sense to have the master resume pull info from other
+ * documents when the purpose of the master resume is to have info be pulled out
+ * of it.
+ *
+ * @param {String} username - Name of the user that wants to attach a text
+ *  snippet.
+ * @param {Number} documentId - ID of the document that the associated
+ *  experience is in.
+ * @param {Number} experienceId - ID of the experience to a text snippet to.
+ * @param {Number} textSnippetId - ID part of the text snippet to attach.
+ * @param {String} textSnippetVersion - Version part of the text snippet to
+ *  attach.
+ * @returns {Experience_X_Text_Snippet} An Experience_X_Text_Snippet instance
+ *  that contains the experience-text snippet relationship data.
+ */
+async function createExperience_x_textSnippet(
+  username,
+  documentId,
+  experienceId,
+  textSnippetId,
+  textSnippetVersion
+) {
+  const logPrefix =
+    `${fileName}.createExperience_x_textSnippet(` +
+    `username = "${username}", ` +
+    `documentId = "${documentId}", ` +
+    `experienceId = "${experienceId}", ` +
+    `textSnippetId = "${textSnippetId}", ` +
+    `textSnippetVersion = ${textSnippetVersion})`;
+  logger.verbose(logPrefix);
+
+  // Verify ownership.
+  await validateOwnership(Document, username, { id: documentId }, logPrefix);
+  await validateOwnership(
+    Experience,
+    username,
+    { id: experienceId },
+    logPrefix
+  );
+  await validateOwnership(
+    TextSnippet,
+    username,
+    { id: textSnippetId, version: textSnippetVersion },
+    logPrefix
+  );
+
+  // Find the document-experience relationship ID.
+  const documentXExperienceId = (
+    await Document_X_Experience.get({ documentId, experienceId })
+  ).id;
+
+  // Find next position.
+  const experiencesXTextSnippets = await Experience_X_Text_Snippet.getAll(
+    documentXExperienceId
+  );
+  const nextPosition = getLastPosition(experiencesXTextSnippets) + 1;
+
+  // Create experience-text snippet relationship.
+  return await Experience_X_Text_Snippet.add({
+    documentXExperienceId,
+    textSnippetId,
+    textSnippetVersion,
+    position: nextPosition,
+  });
+}
+
 // ==================================================
 
 module.exports = {
@@ -316,4 +391,5 @@ module.exports = {
   deleteExperience,
   createTextSnippet,
   getTextSnippets,
+  createExperience_x_textSnippet,
 };
