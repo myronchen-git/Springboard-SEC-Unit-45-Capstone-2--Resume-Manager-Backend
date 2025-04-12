@@ -222,7 +222,7 @@ class Document {
             SELECT json_agg(
               json_build_object(
                 'id', t.id,
-                'version', t.version,
+                'version', to_char(t.version AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"'),
                 'parent', t.parent,
                 'type', t.type,
                 'content', t.content
