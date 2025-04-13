@@ -13,6 +13,7 @@ const documentsRoutes = require('./routes/documents');
 const sectionsRoutes = require('./routes/sections');
 const educationsRoutes = require('./routes/educations');
 const experiencesRoutes = require('./routes/experiences');
+const textSnippetsRoutes = require('./routes/textSnippets');
 
 const { NotFoundError } = require('./errors/appErrors');
 
@@ -38,6 +39,7 @@ app.use(`${urlPrefix}/users/:username/documents`, documentsRoutes);
 app.use(`${urlPrefix}/`, sectionsRoutes);
 app.use(`${urlPrefix}/users`, educationsRoutes);
 app.use(`${urlPrefix}/users`, experiencesRoutes);
+app.use(`${urlPrefix}/users`, textSnippetsRoutes);
 
 /** Catch-all for handling 404 errors. */
 app.use(function (req, res, next) {
