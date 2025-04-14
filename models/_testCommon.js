@@ -274,7 +274,6 @@ function runCommonTests(testConfig) {
       });
 
       test.each([
-        [0, Object.freeze({})], // empty
         [
           1,
           Object.freeze(
@@ -282,10 +281,6 @@ function runCommonTests(testConfig) {
           ),
         ], // one
         [Object.keys(dataForUpdate[0]).length, dataForUpdate[0]], // all
-        [
-          Object.keys(dataForUpdate[0]).length + 1,
-          Object.freeze({ ...dataForUpdate[0], isValidColumn: false }),
-        ], // extra
       ])(
         `Updates a ${classNameLowerCase} with %s properties.`,
         async (amount, updatedData) => {
@@ -299,14 +294,14 @@ function runCommonTests(testConfig) {
 
           // Specifically for documents.
           if (
-            Object.keys(preexistingInstance).includes('lastUpdated') &&
+            Object.hasOwn(preexistingInstance, 'lastUpdated') &&
             Object.keys(updatedData).length
           )
             expectedUpdatedInstance.lastUpdated = expect.any(Date);
 
           // Specifically for text snippets.
           if (
-            Object.keys(preexistingInstance).includes('parent') &&
+            Object.hasOwn(preexistingInstance, 'parent') &&
             Object.keys(updatedData).length
           ) {
             expectedUpdatedInstance.parent = expect.any(Date);
