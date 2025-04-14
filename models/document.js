@@ -3,11 +3,7 @@
 const db = require('../database/db');
 const { convertPropsForSqlUpdate } = require('../util/sqlHelpers');
 
-const {
-  AppServerError,
-  NotFoundError,
-  ArgumentError,
-} = require('../errors/appErrors');
+const { AppServerError, NotFoundError } = require('../errors/appErrors');
 
 const logger = require('../util/logger');
 
@@ -65,7 +61,7 @@ class Document {
    *  data.
    */
   static async add(docProps) {
-    const logPrefix = `Document.add(${JSON.stringify(docProps)})`;
+    const logPrefix = `${this.name}.add(${JSON.stringify(docProps)})`;
     logger.verbose(logPrefix);
 
     // Allowed properties/attributes.
@@ -95,7 +91,7 @@ class Document {
    * @returns {Document[]} A list of Document instances.
    */
   static async getAll(owner) {
-    const logPrefix = `Document.getAll(${owner})`;
+    const logPrefix = `${this.name}.getAll(${owner})`;
     logger.verbose(logPrefix);
 
     const queryConfig = {
@@ -122,7 +118,7 @@ class Document {
    *  data.
    */
   static async get(queryParams) {
-    const logPrefix = `Document.get(${JSON.stringify(queryParams)})`;
+    const logPrefix = `${this.name}.get(${JSON.stringify(queryParams)})`;
     logger.verbose(logPrefix);
 
     // Allowed parameters.
@@ -158,7 +154,8 @@ class Document {
    */
   static async getDocumentAndSectionContent(documentId) {
     const logPrefix =
-      'Document.getDocumentAndSectionContent(' + `documentId = ${documentId})`;
+      `${this.name}.getDocumentAndSectionContent(` +
+      `documentId = ${documentId})`;
     logger.verbose(logPrefix);
 
     const queryConfig = {
@@ -268,32 +265,17 @@ class Document {
    *  used only for better error messages.
    * @returns {Document} A new Document instance that contains the updated
    *  document info.
-   * @throws {ArgumentError} If docProps does not contain any valid properties.
    * @throws {NotFoundError} If the document does not exist.
    */
   static async update(id, docProps, oldDocumentName) {
     const logPrefix =
-      'Document.update(' +
+      `${this.name}.update(` +
       `id = ${id}, ` +
       `docProps = ${JSON.stringify(docProps)}, ` +
       `oldDocumentName = "${oldDocumentName}")`;
     logger.verbose(logPrefix);
 
-    // Processing document properties.
-    const allowedProps = ['documentName', 'isMaster', 'isTemplate', 'isLocked'];
-    const filteredProps = Object.fromEntries(
-      Object.entries(docProps).filter((prop) => allowedProps.includes(prop[0]))
-    );
-
-    // If given no arguments, throw an Error.
-    if (!Object.keys(filteredProps).length) {
-      const errorMessage = 'There are no valid properties for updating.';
-      logger.error(`${logPrefix}: ${errorMessage}`);
-      throw new ArgumentError(errorMessage);
-    }
-
-    // Making update to database.
-    const [sqlSubstring, sqlValues] = convertPropsForSqlUpdate(filteredProps);
+    const [sqlSubstring, sqlValues] = convertPropsForSqlUpdate(docProps);
 
     const queryConfig = {
       text: `
@@ -310,20 +292,18 @@ class Document {
     // If no database table rows were affected, then the document was not found.
     if (result.rowCount === 0) {
       const errorMessage = `Document ID ${id} ${
-        oldDocumentName ? 'with name "' + oldDocumentName + '" ' : ''
+        oldDocumentName ? `with name "${oldDocumentName}" ` : ''
       }was not found.`;
 
       logger.error(`${logPrefix}: ${errorMessage}`);
       throw new NotFoundError(errorMessage);
     }
 
-    // Returning a Document Object.
     return new Document(...Object.values(result.rows[0]));
   }
 
   /**
-   * Updates a document with new properties.  If no properties are passed, then
-   * the document is not updated.
+   * Updates a document with new properties.
    *
    * @param {Object} docProps - Contains the updated properties.
    * @returns {Document} The same Document instance that this method was called
@@ -336,10 +316,7 @@ class Document {
     try {
       document = await Document.update(this.id, docProps, this.documentName);
     } catch (err) {
-      if (err instanceof ArgumentError) {
-        // If given no arguments, return.
-        return this;
-      } else if (err instanceof NotFoundError) {
+      if (err instanceof NotFoundError) {
         // If document is not found, then this Document instance is stale and
         // represents a deleted document.
         throw new AppServerError(err.message);
@@ -362,7 +339,7 @@ class Document {
    * @param {Number} id - Document ID of the document to delete.
    */
   static async delete(id) {
-    const logPrefix = `Document.delete(id = ${id})`;
+    const logPrefix = `${this.name}.delete(id = ${id})`;
     logger.verbose(logPrefix);
 
     const queryConfig = {
