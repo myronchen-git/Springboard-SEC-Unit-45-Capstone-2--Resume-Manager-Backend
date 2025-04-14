@@ -16,6 +16,7 @@ const {
   createTextSnippet,
   getTextSnippets,
   createExperience_x_textSnippet,
+  deleteExperience_x_textSnippet,
 } = require('../services/experienceService');
 const { ensureLoggedIn } = require('../middleware/auth');
 const { runJsonSchemaValidator } = require('../util/validators');
@@ -387,6 +388,50 @@ router.get(
       );
 
       return res.json({ textSnippets });
+    } catch (err) {
+      return next(err);
+    }
+  }
+);
+
+/**
+ * DELETE /users/:username/documents/:documentId/experiences/:experienceId
+ * /text-snippets/:textSnippetId
+ * {} => {}
+ *
+ * Authorization required: login
+ *
+ * Deletes an experience-text snippet relationship.
+ */
+router.delete(
+  '/:username/documents/:documentId/experiences/:experienceId' +
+    '/text-snippets/:textSnippetId',
+  ensureLoggedIn,
+  async (req, res, next) => {
+    const userPayload = res.locals.user;
+    const { username, documentId, experienceId, textSnippetId } = req.params;
+
+    const logPrefix =
+      `DELETE /users/${username}/documents/${documentId}` +
+      `/experiences/${experienceId}/text-snippets/${textSnippetId} ` +
+      `(user: ${JSON.stringify(userPayload)})`;
+    logger.info(logPrefix + ' BEGIN');
+
+    try {
+      runJsonSchemaValidator(
+        urlParamsSchema,
+        { documentId, experienceId, textSnippetId },
+        logPrefix
+      );
+
+      await deleteExperience_x_textSnippet(
+        userPayload.username,
+        documentId,
+        experienceId,
+        textSnippetId
+      );
+
+      return res.sendStatus(200);
     } catch (err) {
       return next(err);
     }

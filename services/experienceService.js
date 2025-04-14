@@ -382,6 +382,41 @@ async function createExperience_x_textSnippet(
   });
 }
 
+/**
+ * Deletes an experience-text snippet relationship.  Document ownership is first
+ * verified.
+ *
+ * @param {String} username - Name of user that wants to delete the
+ *  experience-text snippet relationship.  This should be the owner.
+ * @param {Number} documentId - ID of the document to remove the experience-text
+ *  snippet relationship from.
+ * @param {Number} experienceId - ID of the experience to remove the
+ *  experience-text snippet relationship from.
+ * @param {Number} textSnippetId - ID of the text snippet to remove.
+ */
+async function deleteExperience_x_textSnippet(
+  username,
+  documentId,
+  experienceId,
+  textSnippetId
+) {
+  const logPrefix =
+    `${fileName}.deleteExperience_x_textSnippet(` +
+    `username = "${username}", ` +
+    `documentId = ${documentId}, ` +
+    `textSnippetId = ${textSnippetId}, ` +
+    `experienceId = ${experienceId})`;
+  logger.verbose(logPrefix);
+
+  await validateOwnership(Document, username, { id: documentId }, logPrefix);
+
+  const documentXExperienceId = (
+    await Document_X_Experience.get({ documentId, experienceId })
+  ).id;
+
+  await Experience_X_Text_Snippet.delete(documentXExperienceId, textSnippetId);
+}
+
 // ==================================================
 
 module.exports = {
@@ -392,4 +427,5 @@ module.exports = {
   createTextSnippet,
   getTextSnippets,
   createExperience_x_textSnippet,
+  deleteExperience_x_textSnippet,
 };
