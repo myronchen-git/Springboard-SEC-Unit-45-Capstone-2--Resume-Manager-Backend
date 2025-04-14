@@ -236,11 +236,12 @@ describe('PATCH /users/:username/documents/:docId', () => {
     expect(Date.parse(resp.body.document.lastUpdated)).not.toBeNaN();
   });
 
-  test.each([
-    [Object.freeze({ documentName: updateData.documentName })],
-    [updateData],
-  ])('Updates the master resume with a new name.', async (updateData) => {
+  test('Updates the master resume if only documentName is given.', async () => {
     // Arrange
+    const modifiedUpdateData = Object.freeze({
+      documentName: updateData.documentName,
+    });
+
     // Have to directly insert a master resume document, because the only way
     // thru the API is to create a new user and the documents table gets
     // truncated before each test.
@@ -259,7 +260,7 @@ describe('PATCH /users/:username/documents/:docId', () => {
     // Act
     const resp = await request(app)
       .patch(getUrl(user.username, docId))
-      .send(updateData)
+      .send(modifiedUpdateData)
       .set('authorization', `Bearer ${authToken}`);
 
     // Assert
@@ -267,7 +268,7 @@ describe('PATCH /users/:username/documents/:docId', () => {
 
     const expectedDocument = {
       id: docId,
-      documentName: updateData.documentName,
+      documentName: modifiedUpdateData.documentName,
       owner: user.username,
       createdOn: expect.any(String),
       lastUpdated: expect.any(String),
@@ -312,12 +313,14 @@ describe('PATCH /users/:username/documents/:docId', () => {
   });
 
   test.each([
-    [{ isLocked: updateData.isLocked }],
-    [(({ documentName, ...rest }) => rest)(updateData)],
+    [
+      'without changing the document name',
+      (({ documentName, ...rest }) => rest)(updateData),
+    ],
+    ['when properties other than documentName are also given', updateData],
   ])(
-    'Updating a master resume without changing the document name ' +
-      'should return 400 status.',
-    async (updateData) => {
+    'Updating a master resume %s should return 400 status.',
+    async (testTitle, updateData) => {
       // Arrange
       // Have to directly insert a master resume document, because the only way
       // thru the API is to create a new user and the documents table gets

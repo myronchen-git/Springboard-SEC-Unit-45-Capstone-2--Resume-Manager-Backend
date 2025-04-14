@@ -48,10 +48,8 @@ async function getDocument(username, documentId) {
  * @param {Object} props - Properties of the document to be updated.  See route
  *  for full list.
  * @returns {Document} A Document instance containing the updated info.
- * @throws {ForbiddenError} If the document does not belong to the specified
- *  user.
  * @throws {ArgumentError} If the document is a master resume and document name
- *  is not being updated.
+ *  is not the only one being updated.
  */
 async function updateDocument(username, documentId, props) {
   const logPrefix =
@@ -64,22 +62,18 @@ async function updateDocument(username, documentId, props) {
   const document = await validateDocumentOwner(username, documentId, logPrefix);
 
   if (document.isMaster) {
-    const logMessage =
-      `${logPrefix}: User "${username}" attempted to update master resume ` +
-      `with ID ${documentId} with properties other than documentName.`;
-
-    if (props.documentName) {
-      if (props.length > 1) logger.warn(logMessage);
-      return await document.update({ documentName: props.documentName });
-    } else {
-      logger.error(logMessage);
+    if (!props.documentName || Object.keys(props).length > 1) {
+      logger.error(
+        `${logPrefix}: User "${username}" attempted to update master resume ` +
+          `with ID ${documentId} with properties other than documentName.`
+      );
       throw new ArgumentError(
         'Only document name can be updated for master resumes.'
       );
     }
-  } else {
-    return await document.update(props);
   }
+
+  return await document.update(props);
 }
 
 /**

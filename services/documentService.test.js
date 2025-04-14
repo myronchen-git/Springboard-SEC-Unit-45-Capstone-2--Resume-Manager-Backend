@@ -38,34 +38,11 @@ describe('updateDocument', () => {
     mockUpdate.mockReset();
   });
 
-  test('Calls document.update if document belongs to user.', async () => {
-    // Arrange
-    const document = { owner: username, isMaster: false };
-
-    mockValidateDocumentOwner.mockResolvedValue(document);
-    document.update = mockUpdate.mockResolvedValue(document);
-
-    Object.freeze(document);
-
-    // Act
-    const updatedDocument = await updateDocument(username, documentId, props);
-
-    // Assert
-    expect(updatedDocument).toBe(document);
-    expect(mockValidateDocumentOwner).toHaveBeenCalledWith(
-      username,
-      documentId,
-      expect.any(String)
-    );
-    expect(document.update).toHaveBeenCalledWith(props);
-  });
-
-  test.each([[Object.freeze({ documentName: props.documentName })], [props]])(
-    'If document is the master resume, calls document.update ' +
-      'if documentName is given.',
+  test.each([[{}], [props]])(
+    'Updates document properties for non-master document.',
     async (props) => {
       // Arrange
-      const document = { owner: username, isMaster: true };
+      const document = { owner: username, isMaster: false };
 
       mockValidateDocumentOwner.mockResolvedValue(document);
       document.update = mockUpdate.mockResolvedValue(document);
@@ -82,16 +59,52 @@ describe('updateDocument', () => {
         documentId,
         expect.any(String)
       );
+      expect(document.update).toHaveBeenCalledWith(props);
+    }
+  );
+
+  test(
+    'If document is the master resume, updates document ' +
+      'if only documentName is given.',
+    async () => {
+      // Arrange
+      const document = { owner: username, isMaster: true };
+      const updatedProps = Object.freeze({ documentName: props.documentName });
+
+      mockValidateDocumentOwner.mockResolvedValue(document);
+      document.update = mockUpdate.mockResolvedValue(document);
+
+      Object.freeze(document);
+
+      // Act
+      const updatedDocument = await updateDocument(
+        username,
+        documentId,
+        updatedProps
+      );
+
+      // Assert
+      expect(updatedDocument).toBe(document);
+      expect(mockValidateDocumentOwner).toHaveBeenCalledWith(
+        username,
+        documentId,
+        expect.any(String)
+      );
       expect(document.update).toHaveBeenCalledWith({
-        documentName: props.documentName,
+        documentName: updatedProps.documentName,
       });
     }
   );
 
-  test.each([[{}], [(({ documentName, ...rest }) => rest)(props)]])(
-    'Throws an Error if document is the master resume ' +
-      'and documentName is not given.',
-    async (props) => {
+  test.each([
+    [
+      'documentName is not given.',
+      (({ documentName, ...rest }) => rest)(props),
+    ],
+    ['properties other than documentName are also given.', [props]],
+  ])(
+    'Throws an Error if document is the master resume and %s',
+    async (testTitle, props) => {
       // Arrange
       const document = { owner: username, isMaster: true };
 
