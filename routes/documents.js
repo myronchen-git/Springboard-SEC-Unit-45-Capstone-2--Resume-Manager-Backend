@@ -116,23 +116,25 @@ router.get('/:documentId', ensureLoggedIn, async (req, res, next) => {
 });
 
 /**
- * PATCH /users/:username/documents/:docId
+ * PATCH /users/:username/documents/:documentId
  * { documentName, isTemplate, isLocked } => { document }
  *
  * Authorization required: login
  *
- * If document is master resume, then only documentName can be updated.
+ * Updates a document's properties.  If document is master resume, then only
+ * documentName can be updated.
  *
  * @param {String} [documentName] - New name of the document.
  * @param {Boolean} [isTemplate] - Whether this document should be a template.
  * @param {Boolean} [isLocked] - Whether this document should be locked.
  * @returns {Object} document - Returns all info of the updated document.
  */
-router.patch('/:docId', ensureLoggedIn, async (req, res, next) => {
+router.patch('/:documentId', ensureLoggedIn, async (req, res, next) => {
   const userPayload = res.locals.user;
+  const { documentId } = req.params;
 
   const logPrefix =
-    'PATCH /users/:username/documents/:docId (' +
+    'PATCH /users/:username/documents/:documentId (' +
     `user: ${JSON.stringify(userPayload)}, ` +
     `request body: ${JSON.stringify(req.body)})`;
   logger.info(logPrefix + ' BEGIN');
@@ -142,7 +144,7 @@ router.patch('/:docId', ensureLoggedIn, async (req, res, next) => {
 
     const document = await updateDocument(
       userPayload.username,
-      req.params.docId,
+      documentId,
       req.body
     );
 
