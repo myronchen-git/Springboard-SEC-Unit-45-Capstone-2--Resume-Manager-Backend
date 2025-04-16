@@ -76,7 +76,7 @@ class Education {
    *  data.
    */
   static async add(props) {
-    const logPrefix = `Education.add(${JSON.stringify(props)})`;
+    const logPrefix = `${this.name}.add(${JSON.stringify(props)})`;
     logger.verbose(logPrefix);
 
     // Allowed properties/attributes.
@@ -137,7 +137,7 @@ class Education {
    * @returns {Education[]} A list of Education instances.
    */
   static async getAll(owner) {
-    const logPrefix = `Education.getAll(${owner})`;
+    const logPrefix = `${this.name}.getAll(${owner})`;
     logger.verbose(logPrefix);
 
     const queryConfig = {
@@ -168,7 +168,7 @@ class Education {
    * @returns {Education[]} A list of Education instances.
    */
   static async getAllInDocument(documentId) {
-    const logPrefix = `Education.getAllInDocument(documentId = ${documentId})`;
+    const logPrefix = `${this.name}.getAllInDocument(documentId = ${documentId})`;
     logger.verbose(logPrefix);
 
     const queryConfig = {
@@ -197,7 +197,7 @@ class Education {
    *  data.
    */
   static async get(queryParams) {
-    const logPrefix = `Education.get(${JSON.stringify(queryParams)})`;
+    const logPrefix = `${this.name}.get(${JSON.stringify(queryParams)})`;
     logger.verbose(logPrefix);
 
     // Allowed parameters.
@@ -245,27 +245,10 @@ class Education {
    *  called on, but with updated property values.
    */
   async update(props) {
-    const logPrefix = `Education.update(${JSON.stringify(props)})`;
+    const logPrefix = `${this.name}.update(${JSON.stringify(props)})`;
     logger.verbose(logPrefix);
 
-    const allowedProps = [
-      'school',
-      'location',
-      'startDate',
-      'endDate',
-      'degree',
-      'gpa',
-      'awardsAndHonors',
-      'activities',
-    ];
-    const filteredProps = Object.fromEntries(
-      Object.entries(props).filter((prop) => allowedProps.includes(prop[0]))
-    );
-
-    // If given no arguments, return.
-    if (!Object.keys(filteredProps).length) return this;
-
-    const [sqlSubstring, sqlValues] = convertPropsForSqlUpdate(filteredProps);
+    const [sqlSubstring, sqlValues] = convertPropsForSqlUpdate(props);
 
     // Comma at end of sqlSubstring will be removed.
     const queryConfig = {
@@ -297,7 +280,7 @@ class Education {
    * properties/fields.  Remember to delete the instance this belongs to!
    */
   async delete() {
-    const logPrefix = `Education.delete()`;
+    const logPrefix = `${this.name}.delete()`;
     logger.verbose(logPrefix);
 
     const queryConfig = {
