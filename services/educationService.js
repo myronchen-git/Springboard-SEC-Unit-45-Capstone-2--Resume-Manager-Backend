@@ -178,8 +178,15 @@ async function updateEducation(username, documentId, educationId, props) {
     );
   }
 
+  // Transform empty Strings into null, where using null will clear an attribute
+  // in the database table.
+  const transformedProps = { ...props };
+  for (const key in transformedProps) {
+    if (transformedProps[key] === '') transformedProps[key] = null;
+  }
+
   // Update education.
-  return await education.update(props);
+  return await education.update(transformedProps);
 }
 
 /**

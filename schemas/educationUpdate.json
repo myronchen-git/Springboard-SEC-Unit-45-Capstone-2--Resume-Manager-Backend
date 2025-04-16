@@ -58,13 +58,11 @@
     },
     "gpa": {
       "type": "string",
-      "minLength": 2,
       "maxLength": 20,
       "examples": ["4.0 / 4.0", "10 / 10"]
     },
     "awardsAndHonors": {
       "type": "string",
-      "minLength": 2,
       "examples": [
         "Honor Roll",
         "Dean's List",
@@ -73,7 +71,6 @@
     },
     "activities": {
       "type": "string",
-      "minLength": 2,
       "examples": [
         "student government",
         "basketball",
