@@ -46,13 +46,14 @@ class Experience {
    * @param {String} props.organization - Name of the company or other type of
    *  organization.
    * @param {String} props.location - Location of the organization.
-   * @param {String} props.startDate - The start date of joining the organization.
+   * @param {String} props.startDate - The start date of joining the
+   *  organization.
    * @param {String} [props.endDate] - The end date of leaving the organization.
    * @returns {Experience} A new Experience instance that contains the
    *  experience's data.
    */
   static async add(props) {
-    const logPrefix = `Experience.add(${JSON.stringify(props)})`;
+    const logPrefix = `${this.name}.add(${JSON.stringify(props)})`;
     logger.verbose(logPrefix);
 
     // Allowed properties/attributes.
@@ -90,7 +91,7 @@ class Experience {
    * @returns {Experience[]} A list of Experience instances.
    */
   static async getAll(owner) {
-    const logPrefix = `Experience.getAll(${owner})`;
+    const logPrefix = `${this.name}.getAll(${owner})`;
     logger.verbose(logPrefix);
 
     const queryConfig = {
@@ -123,7 +124,7 @@ class Experience {
    *  experience's data.
    */
   static async get(queryParams) {
-    const logPrefix = `Experience.get(${JSON.stringify(queryParams)})`;
+    const logPrefix = `${this.name}.get(${JSON.stringify(queryParams)})`;
     logger.verbose(logPrefix);
 
     // Allowed parameters.
@@ -158,33 +159,20 @@ class Experience {
    *
    * @param {Object} props - Contains the updated properties.
    * @param {String} [props.title] - New job title or equivalent.
-   * @param {String} [props.organization] - New name of the company or other type
-   *  of organization.
+   * @param {String} [props.organization] - New name of the company or other
+   *  type of organization.
    * @param {String} [props.location] - New location of the organization.
-   * @param {String} [props.startDate] - New start date of joining the organization.
+   * @param {String} [props.startDate] - New start date of joining the
+   *  organization.
    * @param {String} [props.endDate] - New end date of leaving the organization.
    * @returns {Experience} The same Experience instance that this method was
    *  called on, but with updated property values.
    */
   async update(props) {
-    const logPrefix = `Experience.update(${JSON.stringify(props)})`;
+    const logPrefix = `${this.name}.update(${JSON.stringify(props)})`;
     logger.verbose(logPrefix);
 
-    const allowedProps = [
-      'title',
-      'organization',
-      'location',
-      'startDate',
-      'endDate',
-    ];
-    const filteredProps = Object.fromEntries(
-      Object.entries(props).filter((prop) => allowedProps.includes(prop[0]))
-    );
-
-    // If given no arguments, return.
-    if (!Object.keys(filteredProps).length) return this;
-
-    const [sqlSubstring, sqlValues] = convertPropsForSqlUpdate(filteredProps);
+    const [sqlSubstring, sqlValues] = convertPropsForSqlUpdate(props);
 
     // Comma at end of sqlSubstring will be removed.
     const queryConfig = {
@@ -218,7 +206,7 @@ class Experience {
    * properties/fields.  Remember to delete the instance this belongs to!
    */
   async delete() {
-    const logPrefix = `Experience.delete()`;
+    const logPrefix = `${this.name}.delete()`;
     logger.verbose(logPrefix);
 
     const queryConfig = {
