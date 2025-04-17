@@ -83,10 +83,33 @@ function getLastPosition(relationships) {
   return relationships.at(-1)?.position ?? -1;
 }
 
+/**
+ * Replaces the empty String values of an Object into nulls.  This only applies
+ * to top-level (one level deep) values.
+ *
+ * This is originally intended to transform the updated properties of
+ * educations, experiences, etc., which will then be used to update database
+ * entries.  The nulls will be used to clear out attributes.
+ *
+ * @param {Object} obj - An Object with String values.
+ * @returns {Object} A shallow copy of the passed-in Object, but with only empty
+ *  String values replaced with nulls.
+ */
+function transformObjectEmptyStringValuesIntoNulls(obj) {
+  const transformedObj = { ...obj };
+
+  for (const key in transformedObj) {
+    if (transformedObj[key] === '') transformedObj[key] = null;
+  }
+
+  return transformedObj;
+}
+
 // ==================================================
 
 module.exports = {
   validateDocumentOwner,
   validateOwnership,
   getLastPosition,
+  transformObjectEmptyStringValuesIntoNulls,
 };

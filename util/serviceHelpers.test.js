@@ -5,6 +5,7 @@ const {
   validateDocumentOwner,
   validateOwnership,
   getLastPosition,
+  transformObjectEmptyStringValuesIntoNulls,
 } = require('./serviceHelpers');
 
 const { ForbiddenError } = require('../errors/appErrors');
@@ -154,5 +155,48 @@ describe('getLastPosition', () => {
 
     // Assert
     expect(lastPosition).toBe(-1);
+  });
+});
+
+// --------------------------------------------------
+
+describe('transformObjectEmptyStringValuesIntoNulls', () => {
+  test.each([
+    [{}, {}],
+    [
+      { a: '1', b: '' },
+      { a: '1', b: null },
+    ],
+    [
+      { a: '1', b: '2', c: '', d: '' },
+      { a: '1', b: '2', c: null, d: null },
+    ],
+  ])(
+    'Returns a copy of an Object with empty Strings replaced with nulls.',
+    (originalObject, expectedObject) => {
+      // Act
+      const returnedObject =
+        transformObjectEmptyStringValuesIntoNulls(originalObject);
+
+      // Assert
+      expect(returnedObject).toEqual(expectedObject);
+      expect(returnedObject).not.toBe(expectedObject);
+    }
+  );
+
+  test('Does not affect Object values that are not Strings.', () => {
+    // Arrange
+    const originalObject = { a: '1', b: '', c: Object.freeze([]) };
+    const expectedObject = { a: '1', b: null, c: originalObject.c };
+
+    // Act
+    const returnedObject =
+      transformObjectEmptyStringValuesIntoNulls(originalObject);
+
+    // Assert
+    expect(returnedObject).toEqual(expectedObject);
+    expect(returnedObject).not.toBe(expectedObject);
+
+    expect(returnedObject.c).toBe(expectedObject.c);
   });
 });
