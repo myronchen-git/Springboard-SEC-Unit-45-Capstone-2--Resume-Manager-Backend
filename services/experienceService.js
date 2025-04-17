@@ -7,7 +7,7 @@ const Document = require('../models/document');
 const Experience = require('../models/experience');
 const Document_X_Experience = require('../models/document_x_experience');
 const TextSnippet = require('../models/textSnippet');
-const Experience_X_Text_Snippet = require('../models/experience_x_text_snippet');
+const Experience_X_Text_Snippet = require('../models/experience_x_textSnippet');
 const {
   validateOwnership,
   getLastPosition,

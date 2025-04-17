@@ -3,7 +3,7 @@
 const db = require('../database/db');
 
 const Document_X_Experience = require('./document_x_experience');
-const Experience_X_Text_Snippet = require('./experience_x_text_snippet');
+const Experience_X_Text_Snippet = require('./experience_x_textSnippet');
 
 const { AppServerError, NotFoundError } = require('../errors/appErrors');
 
