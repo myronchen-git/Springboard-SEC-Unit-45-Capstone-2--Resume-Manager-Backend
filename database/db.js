@@ -80,7 +80,7 @@ class PostgresDb {
     try {
       return await dbClient.query(queryConfig);
     } catch (err) {
-      logger.error(`${logPrefix}: ${err}.`);
+      logger.error(`${logPrefix}: ${err}.  Details: ${err.detail}`);
 
       if (errorCallback) errorCallback(err);
 
