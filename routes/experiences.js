@@ -4,6 +4,7 @@ const express = require('express');
 
 const urlParamsSchema = require('../schemas/urlParams.json');
 const experienceNewSchema = require('../schemas/experienceNew.json');
+const experienceUpdateSchema = require('../schemas/experienceUpdate.json');
 const textSnippetNewSchema = require('../schemas/textSnippetNew.json');
 const textSnippetVersionSchema = require('../schemas/textSnippetVersion.json');
 
@@ -11,6 +12,7 @@ const Experience = require('../models/experience');
 const {
   createExperience,
   createDocument_x_experience,
+  updateExperience,
   deleteDocument_x_experience,
   deleteExperience,
   createTextSnippet,
@@ -163,6 +165,58 @@ router.get('/:username/experiences', ensureLoggedIn, async (req, res, next) => {
     return next(err);
   }
 });
+
+/**
+ * PATCH /users/:username/experiences/:experienceId
+ * {
+ *  title,
+ *  organization,
+ *  location,
+ *  startDate,
+ *  endDate,
+ * } => { experience }
+ *
+ * Authorization required: login
+ *
+ * Updates an experience.  All input data are optional, but at least one is
+ * needed, else an error is thrown.
+ *
+ * @param {String} [title] - Job title or equivalent.
+ * @param {String} [organization] - Name of the company or other type of
+ *  organization.
+ * @param {String} [location] - Location of the organization.
+ * @param {String} [startDate] - Start date of joining the organization.
+ * @param {String} [endDate] - End date of leaving the organization.
+ */
+router.patch(
+  '/:username/experiences/:experienceId',
+  ensureLoggedIn,
+  async (req, res, next) => {
+    const userPayload = res.locals.user;
+    const { username, experienceId } = req.params;
+
+    const logPrefix =
+      `PATCH /users/${username}/experiences/${experienceId} ` +
+      `(user: ${JSON.stringify(userPayload)}, ` +
+      `request body: ${JSON.stringify(req.body)})`;
+    logger.info(logPrefix + ' BEGIN');
+
+    try {
+      runJsonSchemaValidator(urlParamsSchema, { experienceId }, logPrefix);
+      runJsonSchemaValidator(experienceUpdateSchema, req.body, logPrefix);
+
+      const experience = await updateExperience(
+        userPayload.username,
+        experienceId,
+        req.body
+      );
+
+      return res.json({ experience });
+    } catch (err) {
+      return next(err);
+    }
+  }
+);
 
 /**
  * DELETE /users/:username/documents/:documentId/experiences/:experienceId

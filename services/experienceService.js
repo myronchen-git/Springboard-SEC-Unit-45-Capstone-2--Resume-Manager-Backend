@@ -11,6 +11,7 @@ const Experience_X_Text_Snippet = require('../models/experience_x_text_snippet')
 const {
   validateOwnership,
   getLastPosition,
+  transformObjectEmptyStringValuesIntoNulls,
 } = require('../util/serviceHelpers');
 
 const { BadRequestError, ForbiddenError } = require('../errors/appErrors');
@@ -85,6 +86,28 @@ async function createExperience(username, documentId, props) {
   });
 
   return { experience, document_x_experience };
+}
+
+async function updateExperience(username, experienceId, props) {
+  const logPrefix =
+    `${fileName}.updateExperience(` +
+    `username = "${username}", ` +
+    `experienceId = ${experienceId}), ` +
+    `props = ${JSON.stringify(props)})`;
+  logger.verbose(logPrefix);
+
+  // Verify ownership.
+  const experience = await validateOwnership(
+    Experience,
+    username,
+    { id: experienceId },
+    logPrefix
+  );
+
+  // Update experience.
+  return await experience.update(
+    transformObjectEmptyStringValuesIntoNulls(props)
+  );
 }
 
 /**
@@ -421,6 +444,7 @@ async function deleteExperience_x_textSnippet(
 
 module.exports = {
   createExperience,
+  updateExperience,
   createDocument_x_experience,
   deleteDocument_x_experience,
   deleteExperience,
