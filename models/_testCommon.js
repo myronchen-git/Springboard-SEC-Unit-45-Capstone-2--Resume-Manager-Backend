@@ -337,7 +337,13 @@ function runCommonTests(testConfig) {
           // Arrange
           const nonexistentInstance =
             className === 'TextSnippet'
-              ? new ClassRef(999, new Date(2030, 0, 1))
+              ? new ClassRef(
+                  999,
+                  new Date(2030, 0, 1),
+                  users[0].username,
+                  'type',
+                  'content'
+                )
               : new ClassRef(999);
 
           // Act

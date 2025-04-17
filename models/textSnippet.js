@@ -180,12 +180,12 @@ class TextSnippet {
 
   /**
    * Makes a new text snippet with new properties, with certain properties from
-   * the old.  The old snippet is kept.  If no properties are passed, then the
-   * text snippet is not updated.
+   * the old.  The old snippet is kept.
    *
    * @param {Object} props - Contains the updated properties.
    * @param {String} [props.type] - New type of content.
    * @param {String} [props.content] - New content of the text snippet.
+   * @throws {AppServerError} If the old text snippet did not exist.
    * @returns {TextSnippet} A new TextSnippet instance, which has a different
    *  version from the original snippet, and the parent referencing the original
    *  snippet.
@@ -194,32 +194,8 @@ class TextSnippet {
     const logPrefix = `${this.name}.update(${JSON.stringify(props)})`;
     logger.verbose(logPrefix);
 
-    // If given no arguments, return.
-    if (!props.type && !props.content) return this;
-
-    // Check if text snippet exists in the database.
-    let queryConfig = {
-      text: `
-  SELECT id, version
-  FROM ${TextSnippet.tableName}
-  WHERE id = $1 AND version = $2;`,
-      values: [this.id, this.version],
-    };
-
-    let result = await db.query({ queryConfig, logPrefix });
-
-    if (!result.rows.length) {
-      logger.error(
-        `${logPrefix}: TextSnippet ID ${this.id}, version ${this.version} ` +
-          `was not found.`
-      );
-      throw new AppServerError(
-        `TextSnippet ID ${this.id}, version ${this.version} was not found.`
-      );
-    }
-
     // Make a new entry so that the old version is kept.
-    queryConfig = {
+    const queryConfig = {
       text: `
   INSERT INTO ${TextSnippet.tableName} (id, owner, parent, type, content)
   VALUES ($1, $2, $3, $4, $5)
@@ -233,7 +209,18 @@ class TextSnippet {
       ],
     };
 
-    result = await db.query({ queryConfig, logPrefix });
+    const result = await db.query({
+      queryConfig,
+      logPrefix,
+      errorCallback: (err) => {
+        // PostgreSQL error code 23503 is for foreign key constraint violation.
+        if (err.code === '23503') {
+          throw new AppServerError(
+            `TextSnippet ID ${this.id}, version ${this.version} was not found.`
+          );
+        }
+      },
+    });
 
     return new TextSnippet(...Object.values(result.rows[0]));
   }
