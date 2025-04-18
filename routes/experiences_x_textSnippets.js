@@ -11,7 +11,7 @@ const {
   getTextSnippets,
   createExperience_x_textSnippet,
   deleteExperience_x_textSnippet,
-} = require('../services/experienceService');
+} = require('../services/experienceXTextSnippetService');
 const { ensureLoggedIn } = require('../middleware/auth');
 const { runJsonSchemaValidator } = require('../util/validators');
 
