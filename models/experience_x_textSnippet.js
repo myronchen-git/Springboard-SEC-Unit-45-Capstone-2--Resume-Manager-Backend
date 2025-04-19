@@ -1,6 +1,10 @@
 'use strict';
 
+const db = require('../database/db');
+
 const Relationship = require('./relationship');
+
+const logger = require('../util/logger');
 
 // ==================================================
 
@@ -176,9 +180,50 @@ class Experience_X_Text_Snippet extends Relationship {
   }
 
   /**
+   * Replaces all text snippet versions in all experiences_x_text_snippets. This
+   * is used in conjunction with updating a text snippet to allow all references
+   * to be updated as well, so that when retrieving an experience's text
+   * snippets, the correct text snippets are shown.
+   *
+   * @param {Number} textSnippetId - ID of the text snippet to be replaced.
+   * @param {Date | String} oldTextSnippetVersion - Version of the text snippet
+   *  to be replaced.
+   * @param {Date | String} newTextSnippetVersion - Newer version of the text
+   *  snippet that is replacing.
+   * @returns {Number} Number of text snippets updated.
+   */
+  static async replaceTextSnippet(
+    textSnippetId,
+    oldTextSnippetVersion,
+    newTextSnippetVersion
+  ) {
+    const logPrefix =
+      `${this.name}.replaceTextSnippet(` +
+      `textSnippetId = ${textSnippetId}, ` +
+      `oldTextSnippetVersion = "${oldTextSnippetVersion}", ` +
+      `newTextSnippetVersion = "${newTextSnippetVersion}")`;
+    logger.verbose(logPrefix);
+
+    const queryConfig = {
+      text: `
+  UPDATE ${Experience_X_Text_Snippet.tableName}
+  SET text_snippet_version = $1
+  WHERE text_snippet_id = $2 AND text_snippet_version = $3;`,
+      values: [newTextSnippetVersion, textSnippetId, oldTextSnippetVersion],
+    };
+
+    const result = await db.query({ queryConfig, logPrefix });
+
+    logger.verbose(`${logPrefix}: ${result.rowCount} replaced.`);
+
+    return result.rowCount;
+  }
+
+  /**
    * Deletes a experience_x_text_snippet entry in the database.
    *
-   * @param {Number} documentXExperienceId - ID of the documents_x_experiences to remove the text snippet from.
+   * @param {Number} documentXExperienceId - ID of the documents_x_experiences
+   *  to remove the text snippet from.
    * @param {Number} textSnippetId - ID of the text snippet to be removed.
    */
   static async delete(documentXExperienceId, textSnippetId) {

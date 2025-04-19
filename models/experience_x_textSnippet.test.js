@@ -389,6 +389,142 @@ describe('Experience_X_Text_Snippet', () => {
     });
   });
 
+  // -------------------------------------------------- replaceTextSnippet
+
+  describe('replaceTextSnippet', () => {
+    let anotherDocument;
+    let anotherDocumentXExperience;
+    let oldTextSnippet;
+    let updatedTextSnippet;
+
+    beforeAll(async () => {
+      anotherDocument = await Document.add({
+        documentName: 'doc 100',
+        owner: users[0].username,
+        isMaster: false,
+        isTemplate: false,
+      });
+
+      anotherDocumentXExperience = await Document_X_Experience.add({
+        documentId: anotherDocument.id,
+        experienceId: 1,
+        position: 0,
+      });
+
+      oldTextSnippet = await TextSnippet.get({
+        id: experienceXTextSnippetDatas[0].textSnippetId,
+        version: experienceXTextSnippetDatas[0].textSnippetVersion,
+      });
+
+      updatedTextSnippet = await oldTextSnippet.update({
+        content: 'new content',
+      });
+    });
+
+    afterAll(async () => {
+      await Document.delete(anotherDocument.id);
+      await updatedTextSnippet.delete();
+    });
+
+    test('Replaces all text snippet versions in all experiences_x_text_snippets.', async () => {
+      // Arrange
+      const experienceXText_SnippetData = { ...experienceXTextSnippetDatas[0] };
+      delete experienceXText_SnippetData.documentXExperienceId;
+
+      const textSnippetId = experienceXText_SnippetData.textSnippetId;
+      const oldTextSnippetVersion =
+        experienceXText_SnippetData.textSnippetVersion;
+      const newTextSnippetVersion = updatedTextSnippet.version;
+
+      const documentXExperienceIds = [1, anotherDocumentXExperience.id];
+
+      // Adding the same text snippet with ID 1 to different
+      // documents_x_experiences.
+      for (const documentXExperienceId of documentXExperienceIds) {
+        await Experience_X_Text_Snippet.add({
+          documentXExperienceId,
+          ...experienceXText_SnippetData,
+        });
+      }
+
+      // Act
+      const amountReplaced = await Experience_X_Text_Snippet.replaceTextSnippet(
+        textSnippetId,
+        oldTextSnippetVersion,
+        newTextSnippetVersion
+      );
+
+      // Assert
+      expect(amountReplaced).toBe(documentXExperienceIds.length);
+
+      // Have to get all entries, because there is no method to get entries
+      // according to text snippet ID.
+      const databaseEntries = (
+        await db.query({
+          queryConfig: { text: sqlTextSelectAll },
+        })
+      ).rows;
+
+      expect(
+        databaseEntries.every(
+          (entry) =>
+            entry.textSnippetVersion.getTime() ===
+              updatedTextSnippet.version.getTime() && entry.position === 0
+        )
+      ).toBeTruthy();
+    });
+
+    test('Does not replace other text snippets of different IDs.', async () => {
+      // There should only be one experience_x_text_snippet for the first text
+      // snippet in textSnippets.
+
+      // Arrange
+      for (const experience_x_text_snippet of experienceXTextSnippetDatas) {
+        await Experience_X_Text_Snippet.add(experience_x_text_snippet);
+      }
+
+      const textSnippetId = oldTextSnippet.id;
+      const oldTextSnippetVersion = oldTextSnippet.version;
+      const newTextSnippetVersion = updatedTextSnippet.version;
+
+      // Act
+      const amountReplaced = await Experience_X_Text_Snippet.replaceTextSnippet(
+        textSnippetId,
+        oldTextSnippetVersion,
+        newTextSnippetVersion
+      );
+
+      // Assert
+      expect(amountReplaced).toBe(1);
+
+      // Have to get all entries, because there is no method to get entries
+      // according to text snippet ID.
+      const databaseEntries = (
+        await db.query({
+          queryConfig: { text: sqlTextSelectAll },
+        })
+      ).rows;
+
+      // Check the updated experience_x_text_snippet.
+      expect(databaseEntries.at(-1).textSnippetId).toBe(textSnippetId);
+      expect(databaseEntries.at(-1).textSnippetVersion.getTime()).toBe(
+        newTextSnippetVersion.getTime()
+      );
+      expect(databaseEntries.at(-1).position).toBe(0);
+
+      // Check the rest of the experiences_x_text_snippets.
+      for (let i = 0; i < databaseEntries.length - 1; i++) {
+        expect(databaseEntries[i].textSnippetId).toBe(
+          experienceXTextSnippetDatas[i + 1].textSnippetId
+        );
+        expect(databaseEntries[i].textSnippetVersion.getTime()).toBe(
+          experienceXTextSnippetDatas[i + 1].textSnippetVersion.getTime()
+        );
+        expect(databaseEntries[i].position).toBe(i + 1);
+      }
+    });
+  });
+
   // -------------------------------------------------- delete
 
   describe('delete', () => {
