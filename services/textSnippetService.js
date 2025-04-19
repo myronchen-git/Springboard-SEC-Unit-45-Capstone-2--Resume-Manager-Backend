@@ -4,6 +4,7 @@ const path = require('path');
 const fileName = path.basename(__filename, '.js');
 
 const TextSnippet = require('../models/textSnippet');
+const Experience_X_Text_Snippet = require('../models/experience_x_textSnippet');
 const { validateOwnership } = require('../util/serviceHelpers');
 
 const logger = require('../util/logger');
@@ -11,7 +12,9 @@ const logger = require('../util/logger');
 // ==================================================
 
 /**
- * Verifies text snippet ownership and updates it.
+ * Verifies text snippet ownership and updates it.  Also updates all
+ * experiences_x_textSnippets (experience-text snippet relationships) to replace
+ * the old text snippet with the new one.
  *
  * @param {String} username - Name of the user that is doing the update.
  * @param {Number} textSnippetId - ID part of the text snippet to update.
@@ -42,7 +45,16 @@ async function updateTextSnippet(
     logPrefix
   );
 
-  return await textSnippet.update(props);
+  const updatedTextSnippet = await textSnippet.update(props);
+
+  // Ensure that updatedTextSnippet is a new instance.
+  await Experience_X_Text_Snippet.replaceTextSnippet(
+    textSnippetId,
+    textSnippet.version,
+    updatedTextSnippet.version
+  );
+
+  return updatedTextSnippet;
 }
 
 /**

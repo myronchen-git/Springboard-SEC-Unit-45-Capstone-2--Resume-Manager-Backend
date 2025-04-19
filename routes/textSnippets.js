@@ -28,7 +28,8 @@ const router = new express.Router();
  * Authorization required: login
  *
  * Updates a text snippet.  This creates a new text snippet with a different
- * version, but references the old one.
+ * version, but it still references the old one.  The old text snippet is
+ * replaced with the new one across all documents.
  *
  * @param {String} textSnippetVersion - Version part of the text snippet.
  * @param {String} [type] - Type of content.
