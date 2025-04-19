@@ -18,10 +18,8 @@ const {
   users,
   documents,
   textSnippets,
-  versions,
   experiences,
   documents_x_experiences,
-  experiences_x_text_snippets,
 } = require('../_testData');
 const {
   commonBeforeAll,
@@ -37,113 +35,44 @@ describe('Experience_X_Text_Snippet', () => {
   SELECT ${Experience_X_Text_Snippet._allDbColsAsJs}
   FROM ${Experience_X_Text_Snippet.tableName}`;
 
-  beforeAll(() =>
-    commonBeforeAll(db)
-      .then(() =>
-        db.query({
-          queryConfig: {
-            text: `
-  INSERT INTO ${User.tableName}
-  VALUES ($1, $2);`,
-            values: [users[0].username, users[0].password],
-          },
-        })
-      )
-      .then(() =>
-        db.query({
-          queryConfig: {
-            text: `
-  INSERT INTO ${Document.tableName} (
-    id,
-    document_name,
-    owner,
-    is_master,
-    is_template
-  ) VALUES ($1, $2, $3, $4, $5);`,
-            values: [
-              1,
-              documents[0].documentName,
-              documents[0].owner,
-              documents[0].isMaster,
-              documents[0].isTemplate,
-            ],
-          },
-        })
-      )
-      .then(() => {
-        const insertData = experiences.map((origExp, idx) => {
-          const exp = { id: idx + 1, ...origExp };
-          exp.endDate ||= null;
+  const existingDocumentXExperiences = [];
+  const existingTextSnippets = [];
+  const experienceXTextSnippetDatas = [];
 
-          return exp;
-        });
+  beforeAll(async () => {
+    await commonBeforeAll(db);
 
-        return db.query({
-          queryConfig: {
-            text: `
-  INSERT INTO ${Experience.tableName} (
-    id,
-    owner,
-    title,
-    organization,
-    location,
-    start_date,
-    end_date
-  ) VALUES ($1, $2, $3, $4, $5, $6, $7);`,
-            values: [...Object.values(insertData[0])],
-          },
-        });
-      })
-      .then(() => {
-        const insertData = documents_x_experiences.map((origData, idx) => ({
-          id: idx + 1,
-          ...origData,
-        }));
+    await User.register({
+      username: users[0].username,
+      password: users[0].password,
+    });
 
-        return db.query({
-          queryConfig: {
-            text: `
-  INSERT INTO ${Document_X_Experience.tableName} (
-    id,
-    document_id,
-    experience_id,
-    position
-  ) VALUES ($1, $2, $3, $4);`,
-            values: [...Object.values(insertData[0])],
-          },
-        });
-      })
-      .then(() => {
-        const insertData = textSnippets.map((origTextSnip, idx) => ({
-          id: idx + 1,
-          version: versions[idx],
-          owner: origTextSnip.owner,
-          parent: origTextSnip.parent || null,
-          type: origTextSnip.type,
-          content: origTextSnip.content,
-        }));
+    await Document.add(documents[0]);
 
-        return db.query({
-          queryConfig: {
-            text: `
-  INSERT INTO ${TextSnippet.tableName} (
-    id,
-    version,
-    owner,
-    parent,
-    type,
-    content
-  ) VALUES
-    ($1, $2, $3, $4, $5, $6),
-    ($7, $8, $9, $10, $11, $12);`,
-            values: [
-              ...Object.values(insertData[0]),
-              ...Object.values(insertData[1]),
-            ],
-          },
-        });
-      })
-  );
+    for (const experience of experiences) {
+      await Experience.add(experience);
+    }
+
+    for (const document_x_experience of documents_x_experiences) {
+      existingDocumentXExperiences.push(
+        await Document_X_Experience.add(document_x_experience)
+      );
+    }
+
+    for (const textSnippet of textSnippets) {
+      existingTextSnippets.push(await TextSnippet.add(textSnippet));
+    }
+
+    for (let i = 0; i < existingDocumentXExperiences.length; i++) {
+      experienceXTextSnippetDatas.push({
+        // Have to have everything under one document_x_experience ID.
+        documentXExperienceId: existingDocumentXExperiences[0].id,
+        textSnippetId: existingTextSnippets[i].id,
+        textSnippetVersion: existingTextSnippets[i].version,
+        position: i,
+      });
+    }
+  });
 
   beforeEach(() => clearTable(db, Experience_X_Text_Snippet.tableName));
 
@@ -152,7 +81,11 @@ describe('Experience_X_Text_Snippet', () => {
   // -------------------------------------------------- add
 
   describe('add', () => {
-    const dataToAdd = experiences_x_text_snippets[0];
+    let dataToAdd;
+
+    beforeAll(() => {
+      dataToAdd = experienceXTextSnippetDatas[0];
+    });
 
     test('Adds a new experience_x_text_snippet.', async () => {
       // Act
@@ -206,14 +139,14 @@ describe('Experience_X_Text_Snippet', () => {
     );
 
     test(
-      'Throws an Error if adding a experience_x_text_snippet ' +
-        'with same position as another.',
+      'Throws an Error if adding an experience_x_text_snippet ' +
+        'with the same position as another.',
       async () => {
         // Arrange
         const dataWithSamePosition = {
           ...dataToAdd,
-          textSnippetId: experiences_x_text_snippets[1].textSnippetId,
-          textSnippetVersion: experiences_x_text_snippets[1].textSnippetVersion,
+          textSnippetId: experienceXTextSnippetDatas[1].textSnippetId,
+          textSnippetVersion: experienceXTextSnippetDatas[1].textSnippetVersion,
         };
 
         await Experience_X_Text_Snippet.add(dataToAdd);
@@ -246,24 +179,26 @@ describe('Experience_X_Text_Snippet', () => {
   // -------------------------------------------------- getAll
 
   describe('getAll', () => {
-    test.each([
-      [0, [], []],
-      [
-        experiences_x_text_snippets.length,
-        experiences_x_text_snippets,
-        experiences_x_text_snippets,
-      ],
-    ])(
-      'Get all of %i experience_x_text_snippet(s) for a document.',
-      async (amount, inputData, expected) => {
+    let existingData;
+
+    beforeAll(() => {
+      existingData = experienceXTextSnippetDatas[0];
+    });
+
+    test(
+      'Get all of 0 experience_x_text_snippet(s) ' + 'for a document.',
+      async () => {
         // Arrange
+        const inputData = [];
+        const expected = [];
+
         for (const props of inputData) {
           await Experience_X_Text_Snippet.add(props);
         }
 
         // Act
         const instances = await Experience_X_Text_Snippet.getAll(
-          experiences_x_text_snippets[0].documentXExperienceId
+          existingData.documentXExperienceId
         );
 
         // Assert
@@ -276,40 +211,74 @@ describe('Experience_X_Text_Snippet', () => {
       }
     );
 
-    test('Get all experiences_x_text_snippets in the correct order.', async () => {
-      const len = experiences_x_text_snippets.length;
+    test(
+      `Get all of ${documents_x_experiences.length} ` +
+        `experience_x_text_snippet(s) for a document.`,
+      async () => {
+        // Arrange
+        const inputData = experienceXTextSnippetDatas;
+        const expected = experienceXTextSnippetDatas;
 
-      // Arrange
-      // Change positions so that they are not sequential and are reversed.
-      const modifiedExperiences_x_text_snippets = Object.freeze(
-        experiences_x_text_snippets.map((experience_x_text_snippet, idx) => {
-          return Object.freeze({
-            ...experience_x_text_snippet,
-            position: len * (len - idx),
-          });
-        })
-      );
+        for (const props of inputData) {
+          await Experience_X_Text_Snippet.add(props);
+        }
 
-      for (const props of modifiedExperiences_x_text_snippets) {
-        await Experience_X_Text_Snippet.add(props);
+        // Act
+        const instances = await Experience_X_Text_Snippet.getAll(
+          existingData.documentXExperienceId
+        );
+
+        // Assert
+        expect(instances.length).toBe(inputData.length);
+
+        instances.forEach((instance, i) => {
+          expect(instance).toBeInstanceOf(Experience_X_Text_Snippet);
+          expect(instance).toEqual(expected[i]);
+        });
       }
+    );
 
-      // Act
-      const instances = await Experience_X_Text_Snippet.getAll(
-        experiences_x_text_snippets[0].documentXExperienceId
-      );
+    test(
+      'Get all experiences_x_text_snippets ' + 'in the correct order.',
+      async () => {
+        const len = experienceXTextSnippetDatas.length;
 
-      // Assert
-      expect(instances).toEqual(
-        modifiedExperiences_x_text_snippets.toReversed()
-      );
-    });
+        // Arrange
+        // Change positions so that they are not sequential and are reversed.
+        const modifiedExperiencesXTextSnippets = Object.freeze(
+          experienceXTextSnippetDatas.map((experienceXTextSnippet, idx) => {
+            return Object.freeze({
+              ...experienceXTextSnippet,
+              position: len * (len - idx),
+            });
+          })
+        );
+
+        for (const props of modifiedExperiencesXTextSnippets) {
+          await Experience_X_Text_Snippet.add(props);
+        }
+
+        // Act
+        const instances = await Experience_X_Text_Snippet.getAll(
+          existingData.documentXExperienceId
+        );
+
+        // Assert
+        expect(instances).toEqual(
+          modifiedExperiencesXTextSnippets.toReversed()
+        );
+      }
+    );
   });
 
   // -------------------------------------------------- get
 
   describe('get', () => {
-    const existingData = experiences_x_text_snippets[0];
+    let existingData;
+
+    beforeAll(() => {
+      existingData = experienceXTextSnippetDatas[0];
+    });
 
     test('Gets a specified experience_x_text_snippet.', async () => {
       // Arrange
@@ -345,15 +314,15 @@ describe('Experience_X_Text_Snippet', () => {
   // -------------------------------------------------- update
 
   describe('update', () => {
-    // Arrange
-    const existingData = experiences_x_text_snippets[0];
+    let existingData;
     let preexistingInstance = null;
 
-    beforeEach((done) => {
-      Experience_X_Text_Snippet.add(existingData).then((instance) => {
-        preexistingInstance = instance;
-        done();
-      });
+    beforeAll(() => {
+      existingData = experienceXTextSnippetDatas[0];
+    });
+
+    beforeEach(async () => {
+      preexistingInstance = await Experience_X_Text_Snippet.add(existingData);
     });
 
     afterEach(() => {
@@ -363,7 +332,7 @@ describe('Experience_X_Text_Snippet', () => {
     test('Updates a experience_x_text_snippet.', async () => {
       // Arrange
       const newPosition =
-        existingData.position + experiences_x_text_snippets.length;
+        existingData.position + experienceXTextSnippetDatas.length;
 
       const expectedUpdatedData = {
         ...existingData,
@@ -423,7 +392,11 @@ describe('Experience_X_Text_Snippet', () => {
   // -------------------------------------------------- delete
 
   describe('delete', () => {
-    const existingData = experiences_x_text_snippets[0];
+    let existingData;
+
+    beforeAll(() => {
+      existingData = experienceXTextSnippetDatas[0];
+    });
 
     test('Deletes a experience_x_text_snippet.', async () => {
       // Arrange
