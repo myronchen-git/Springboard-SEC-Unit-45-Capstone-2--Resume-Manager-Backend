@@ -241,7 +241,9 @@ router.patch(
  * Updates the positions of all educations in a document.  All educations need
  * to be included.
  *
- * @returns {{educations}} A list of Educations in order of position.
+ * @param {String} educationId - ID of a education.
+ * @returns {Education[]} educations - A list of Education Objects in order of
+ *  position in the document, each containing education info.
  */
 router.put(
   '/:username/documents/:documentId/educations',
