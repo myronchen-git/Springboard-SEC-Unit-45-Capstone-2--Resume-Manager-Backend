@@ -96,8 +96,8 @@ router.post(
  * Gets all sections in a document.  The sections' order is related to their
  * positions.
  *
- * @returns {Object} sections - A list of Objects containing section data in
- *  order of position.
+ * @returns {Section[]} sections - A list of Section Objects in order of
+ *  position in the document, each containing general section info.
  */
 router.get(
   '/users/:username/documents/:documentId/sections',
@@ -133,8 +133,9 @@ router.get(
  * Updates the positions of all sections in a document.  All sections need to be
  * included.
  *
- * @returns {Object} sections - A list of Objects containing section data in
- *  order of position.
+ * @param {String} sectionId - ID of a section.
+ * @returns {Section[]} sections - A list of Section Objects in order of
+ *  position in the document, each containing general section info.
  */
 router.put(
   '/users/:username/documents/:documentId/sections',
