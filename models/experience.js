@@ -1,6 +1,7 @@
 'use strict';
 
 const db = require('../database/db');
+const Document_X_Experience = require('./document_x_experience');
 const { convertPropsForSqlUpdate } = require('../util/sqlHelpers');
 const { convertDateToString } = require('../util/modelHelpers');
 
@@ -26,6 +27,22 @@ class Experience {
     location,
     start_date AS "startDate",
     end_date AS "endDate"`;
+
+  // To help with SQL joins.  Unfortunately, existing code uses _allDbColsAsJs,
+  // so this separate, redundant piece of code will have to exist like this for
+  // now.
+  static #allDbColsAsJs = (alias = '') => {
+    alias &&= alias + '.';
+
+    return `
+    ${alias}id,
+    ${alias}owner,
+    ${alias}title,
+    ${alias}organization,
+    ${alias}location,
+    ${alias}start_date AS "startDate",
+    ${alias}end_date AS "endDate"`;
+  };
 
   constructor(id, owner, title, organization, location, startDate, endDate) {
     this.id = id;
@@ -112,6 +129,34 @@ class Experience {
 
       return experience;
     });
+  }
+
+  /**
+   * Gets all experiences belonging to a document.  The returned Experiences'
+   * order is related to their positions.
+   *
+   * @param {Number} documentId - ID of the document to get experiences from.
+   * @returns {Experience[]} A list of Experience instances.
+   */
+  static async getAllInDocument(documentId) {
+    const logPrefix =
+      `${this.name}.getAllInDocument(` + `documentId = ${documentId})`;
+    logger.verbose(logPrefix);
+
+    const queryConfig = {
+      text: `
+  SELECT ${Experience.#allDbColsAsJs('e')}
+  FROM ${Document_X_Experience.tableName} AS dxe
+  JOIN ${Experience.tableName} AS e
+  ON dxe.experience_id = e.id
+  WHERE dxe.document_id = $1
+  ORDER BY dxe.position;`,
+      values: [documentId],
+    };
+
+    const result = await db.query({ queryConfig, logPrefix });
+
+    return result.rows.map((data) => new Experience(...Object.values(data)));
   }
 
   /**

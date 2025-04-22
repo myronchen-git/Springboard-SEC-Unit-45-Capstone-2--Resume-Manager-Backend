@@ -2,6 +2,8 @@
 
 const Relationship = require('./relationship');
 
+const { camelToSnakeCase } = require('../util/caseConversions');
+
 // ==================================================
 
 /**
@@ -152,6 +154,34 @@ class Document_X_Experience extends Relationship {
       notFoundLog,
       serverErrorMessage
     );
+  }
+
+  /**
+   * Updates the positions of all experiences in a document.
+   *
+   * @param {Number} documentId - ID of the document that is having its
+   *  experiences reordered.
+   * @param {Number[]} experienceIds - List of experiences IDs with the desired
+   *  ordering.
+   * @returns {Document_X_Experience[]} A list of Document_X_Experience
+   *  instances.
+   */
+  static async updateAllPositions(documentId, experienceIds) {
+    let name = 'documentId';
+    const attachTo = {
+      jsName: name,
+      sqlName: camelToSnakeCase(name),
+      id: documentId,
+    };
+
+    name = 'experienceId';
+    const attachWiths = {
+      jsName: name,
+      sqlName: camelToSnakeCase(name),
+      ids: experienceIds,
+    };
+
+    return await super.updateAllPositions(attachTo, attachWiths);
   }
 
   /**

@@ -121,7 +121,7 @@ class Relationship {
    *  describes the ID.  This is used for logging.
    * @param {String} attachWiths.sqlName - The SQL name for the ID of the
    *  content, which will be used in the SQL UPDATE WHERE clause.
-   * @param {Number[]} attachWiths.id - The IDs of the content to be
+   * @param {Number[]} attachWiths.ids - The IDs of the content to be
    *  repositioned, in their desired order.
    * @returns {Array} A list of instances of the relationship data model.
    */

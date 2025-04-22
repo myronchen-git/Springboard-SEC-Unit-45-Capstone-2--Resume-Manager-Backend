@@ -5,12 +5,14 @@ const express = require('express');
 const urlParamsSchema = require('../schemas/urlParams.json');
 const experienceNewSchema = require('../schemas/experienceNew.json');
 const experienceUpdateSchema = require('../schemas/experienceUpdate.json');
+const documentRelationshipPositionsSchema = require('../schemas/documentRelationshipPositions.json');
 
 const Experience = require('../models/experience');
 const {
   createExperience,
   createDocument_x_experience,
   updateExperience,
+  updateDocument_x_experiencePositions,
   deleteDocument_x_experience,
   deleteExperience,
 } = require('../services/experienceService');
@@ -207,6 +209,53 @@ router.patch(
       );
 
       return res.json({ experience });
+    } catch (err) {
+      return next(err);
+    }
+  }
+);
+
+/**
+ * PUT /users/:username/documents/:documentId/experiences
+ * [ experienceId, experienceId, ... ] => { experiences }
+ *
+ * Authorization required: login
+ *
+ * Updates the positions of all experiences in a document.  All experiences need
+ * to be included.
+ *
+ * @param {String} experienceId - ID of a experience.
+ * @returns {Experience[]} experiences - A list of Experience Objects in order
+ *  of position in the document, each containing experience info.
+ */
+router.put(
+  '/:username/documents/:documentId/experiences',
+  ensureLoggedIn,
+  async (req, res, next) => {
+    const userPayload = res.locals.user;
+    const { username, documentId } = req.params;
+
+    const logPrefix =
+      `PUT /users/${username}/documents/${documentId}/experiences ` +
+      `(user: ${JSON.stringify(userPayload)}, ` +
+      `request body: ${JSON.stringify(req.body)})`;
+    logger.info(logPrefix + ' BEGIN');
+
+    try {
+      runJsonSchemaValidator(urlParamsSchema, { documentId }, logPrefix);
+      runJsonSchemaValidator(
+        documentRelationshipPositionsSchema,
+        req.body,
+        logPrefix
+      );
+
+      const experiences = await updateDocument_x_experiencePositions(
+        userPayload.username,
+        documentId,
+        req.body
+      );
+
+      return res.json({ experiences });
     } catch (err) {
       return next(err);
     }

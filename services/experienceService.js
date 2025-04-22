@@ -86,28 +86,6 @@ async function createExperience(username, documentId, props) {
   return { experience, document_x_experience };
 }
 
-async function updateExperience(username, experienceId, props) {
-  const logPrefix =
-    `${fileName}.updateExperience(` +
-    `username = "${username}", ` +
-    `experienceId = ${experienceId}), ` +
-    `props = ${JSON.stringify(props)})`;
-  logger.verbose(logPrefix);
-
-  // Verify ownership.
-  const experience = await validateOwnership(
-    Experience,
-    username,
-    { id: experienceId },
-    logPrefix
-  );
-
-  // Update experience.
-  return await experience.update(
-    transformObjectEmptyStringValuesIntoNulls(props)
-  );
-}
-
 /**
  * Creates a document_x_experience record (document-experience relationship) in
  * the database.  Experience and document ownership are verified, then the next
@@ -166,6 +144,88 @@ async function createDocument_x_experience(username, documentId, experienceId) {
 }
 
 /**
+ * Verifies that an experience belongs to the specified user and then updates
+ * the experience.
+ *
+ * @param {String} username - Name of user that wants to update the experience.
+ * @param {Number} experienceId - ID of the experience to update.
+ * @param {Object} props - Properties of the experience to be updated.  See
+ *  route for full list.
+ * @returns {Experience} An Experience instance containing the updated info.
+ */
+async function updateExperience(username, experienceId, props) {
+  const logPrefix =
+    `${fileName}.updateExperience(` +
+    `username = "${username}", ` +
+    `experienceId = ${experienceId}), ` +
+    `props = ${JSON.stringify(props)})`;
+  logger.verbose(logPrefix);
+
+  // Verify ownership.
+  const experience = await validateOwnership(
+    Experience,
+    username,
+    { id: experienceId },
+    logPrefix
+  );
+
+  // Update experience.
+  return await experience.update(
+    transformObjectEmptyStringValuesIntoNulls(props)
+  );
+}
+
+/**
+ * Changes the order of the experiences in a document.
+ *
+ * @param {String} username - Name of user that wants to interact with the
+ *  document.  This should be the owner.
+ * @param {Number} documentId - ID of the document that is having its
+ *  experiences reordered.
+ * @param {Number[]} experienceIds - List of experiences IDs with the desired
+ *  ordering.
+ * @returns {Experience[]} A list of Experience instances, in order of position.
+ */
+async function updateDocument_x_experiencePositions(
+  username,
+  documentId,
+  experienceIds
+) {
+  const logPrefix =
+    `${fileName}.updateDocument_x_experiencePositions(` +
+    `username = "${username}", ` +
+    `documentId = ${documentId}, ` +
+    `experienceIds = ${experienceIds})`;
+  logger.verbose(logPrefix);
+
+  await validateOwnership(Document, username, { id: documentId }, logPrefix);
+
+  // Verify that experienceIds contains all of the experiences in the document.
+  const documents_x_experiences = await Document_X_Experience.getAll(
+    documentId
+  );
+  if (
+    documents_x_experiences.length !== experienceIds.length ||
+    !documents_x_experiences.every((dxe) =>
+      experienceIds.includes(dxe.experienceId)
+    )
+  ) {
+    logger.error(
+      `${logPrefix}: Provided experience IDs do not exactly ` +
+        'match those in document.'
+    );
+    throw new BadRequestError(
+      'All experiences, and only those, need to be included ' +
+        'when updating their positions in a document.'
+    );
+  }
+
+  await Document_X_Experience.updateAllPositions(documentId, experienceIds);
+
+  return await Experience.getAllInDocument(documentId);
+}
+
+/**
  * Deletes a document-experience relationship.  Document ownership is first
  * verified.
  *
@@ -216,8 +276,9 @@ async function deleteExperience(username, experienceId) {
 
 module.exports = {
   createExperience,
-  updateExperience,
   createDocument_x_experience,
+  updateExperience,
+  updateDocument_x_experiencePositions,
   deleteDocument_x_experience,
   deleteExperience,
 };
