@@ -77,14 +77,14 @@ class Relationship {
    * Retrieves a specific table entry by ID.
    *
    * @param {Object} queryParams - Contains the query parameters for finding a
-   *  specific table entry.
+   *  specific table entry.  Used only for logging.
    * @param {Object} queryConfig - Configuration for the database query.
    * @param {String} queryConfig.text - SQL SELECT statement for the
    *  parameterized query.
    * @param {Array} queryConfig.values - The values to use in the parameterized
    *  query.
    * @param {String} notFoundMessage - Error message to use in the
-   *  NotFoundError.
+   *  NotFoundError when not found.
    * @returns {Object} An instance of the subclass, containing the new entry's
    *  data.
    */

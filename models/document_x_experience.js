@@ -92,7 +92,7 @@ class Document_X_Experience extends Relationship {
    *  specific document_x_experience.
    * @param {Number} queryParams.documentId - Document ID of the
    *  document_x_experience.
-   * @param {String} queryParams.experienceId - Experience ID of the
+   * @param {Number} queryParams.experienceId - Experience ID of the
    *  document_x_experience.
    * @returns {Document_X_Experience} A new Document_X_Experience instance that
    *  contains the document_x_experience's data.

@@ -90,7 +90,7 @@ class Document_X_Section extends Relationship {
    *  specific document_x_section.
    * @param {Number} [queryParams.documentId] - Document ID of the
    *  document_x_section.
-   * @param {String} [queryParams.sectionId] - Section ID of the
+   * @param {Number} [queryParams.sectionId] - Section ID of the
    *  document_x_section.
    * @returns {Document_X_Section} A new Document_X_Section instance that
    *  contains the document_x_section's data.

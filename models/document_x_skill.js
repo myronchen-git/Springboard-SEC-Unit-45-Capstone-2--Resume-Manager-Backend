@@ -80,7 +80,7 @@ class Document_X_Skill extends Relationship {
    *  specific document_x_skill.
    * @param {Number} queryParams.documentId - Document ID of the
    *  document_x_skill.
-   * @param {String} queryParams.skillId - Skill ID of the
+   * @param {Number} queryParams.skillId - Skill ID of the
    *  document_x_skill.
    * @returns {Document_X_Skill} A new Document_X_Skill instance that
    *  contains the document_x_skill's data.

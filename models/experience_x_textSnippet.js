@@ -113,7 +113,7 @@ class Experience_X_Text_Snippet extends Relationship {
    *  specific experience_x_text_snippet.
    * @param {Number} queryParams.documentXExperienceId - Document-experience ID
    *  of the experience_x_text_snippet.
-   * @param {String} queryParams.textSnippetId - Text snippet ID of the
+   * @param {Number} queryParams.textSnippetId - Text snippet ID of the
    *  experience_x_text_snippet.
    * @returns {Experience_X_Text_Snippet} A new Experience_X_Text_Snippet
    *  instance that contains the experience_x_text_snippet's data.
