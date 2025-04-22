@@ -211,6 +211,52 @@ async function createExperience_x_textSnippet(
 }
 
 /**
+ * Verifies text snippet ownership and updates it.  Also updates all
+ * experiences_x_textSnippets (experience-text snippet relationships) to replace
+ * the old text snippet with the new one.
+ *
+ * @param {String} username - Name of the user that is doing the update.
+ * @param {Number} textSnippetId - ID part of the text snippet to update.
+ * @param {String} textSnippetVersion - Version part of the text snippet to
+ *  update.
+ * @param {object} props - Properties of the text snippet to be updated.  See
+ *  route for full list.
+ * @returns {TextSnippet} A TextSnippet instance containing the updated info.
+ */
+async function updateTextSnippet(
+  username,
+  textSnippetId,
+  textSnippetVersion,
+  props
+) {
+  const logPrefix =
+    `${fileName}.updateTextSnippet(` +
+    `username = "${username}", ` +
+    `textSnippetId = ${textSnippetId}, ` +
+    `textSnippetVersion = "${textSnippetVersion}", ` +
+    `props = ${JSON.stringify(props)})`;
+  logger.verbose(logPrefix);
+
+  const textSnippet = await validateOwnership(
+    TextSnippet,
+    username,
+    { id: textSnippetId, version: textSnippetVersion },
+    logPrefix
+  );
+
+  const updatedTextSnippet = await textSnippet.update(props);
+
+  // Ensure that updatedTextSnippet is a new instance.
+  await Experience_X_Text_Snippet.replaceTextSnippet(
+    textSnippetId,
+    textSnippet.version,
+    updatedTextSnippet.version
+  );
+
+  return updatedTextSnippet;
+}
+
+/**
  * Deletes an experience-text snippet relationship.  Document ownership is first
  * verified.
  *
@@ -251,5 +297,6 @@ module.exports = {
   createTextSnippet,
   getTextSnippets,
   createExperience_x_textSnippet,
+  updateTextSnippet,
   deleteExperience_x_textSnippet,
 };

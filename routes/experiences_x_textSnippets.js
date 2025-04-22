@@ -5,11 +5,13 @@ const express = require('express');
 const urlParamsSchema = require('../schemas/urlParams.json');
 const textSnippetNewSchema = require('../schemas/textSnippetNew.json');
 const textSnippetVersionSchema = require('../schemas/textSnippetVersion.json');
+const textSnippetUpdateSchema = require('../schemas/textSnippetUpdate.json');
 
 const {
   createTextSnippet,
   getTextSnippets,
   createExperience_x_textSnippet,
+  updateTextSnippet,
   deleteExperience_x_textSnippet,
 } = require('../services/experienceXTextSnippetService');
 const { ensureLoggedIn } = require('../middleware/auth');
@@ -175,6 +177,64 @@ router.get(
       );
 
       return res.json({ textSnippets });
+    } catch (err) {
+      return next(err);
+    }
+  }
+);
+
+/**
+ * PATCH /users/:username/experiences/:experienceId/text-snippets/:textSnippetId
+ * { textSnippetVersion, type, content } => { textSnippet }
+ *
+ * Authorization required: login
+ *
+ * Updates a text snippet.  This creates a new text snippet with a different
+ * version, but it still references the old one.  The old text snippet is
+ * replaced with the new one across all documents.
+ *
+ * @param {String} textSnippetVersion - Version part of the text snippet.
+ * @param {String} [type] - Type of content.
+ * @param {String} [content] - Content of the text snippet.
+ * @returns {{ textSnippet: TextSnippet }} The text snippet Object containing
+ *  the updated info.
+ */
+router.patch(
+  '/:username/experiences/:experienceId/text-snippets/:textSnippetId',
+  ensureLoggedIn,
+  async (req, res, next) => {
+    const userPayload = res.locals.user;
+    const { username, experienceId, textSnippetId } = req.params;
+    const { textSnippetVersion, ...restOfRequestBody } = req.body;
+
+    const logPrefix =
+      `PATCH /users/${username}/experiences/${experienceId}` +
+      `/text-snippets/${textSnippetId} ` +
+      `(user: ${JSON.stringify(userPayload)}, ` +
+      `request body: ${JSON.stringify(req.body)})`;
+    logger.info(logPrefix + ' BEGIN');
+
+    try {
+      runJsonSchemaValidator(urlParamsSchema, { textSnippetId }, logPrefix);
+      runJsonSchemaValidator(
+        textSnippetVersionSchema,
+        textSnippetVersion,
+        logPrefix
+      );
+      runJsonSchemaValidator(
+        textSnippetUpdateSchema,
+        restOfRequestBody,
+        logPrefix
+      );
+
+      const textSnippet = await updateTextSnippet(
+        username,
+        textSnippetId,
+        textSnippetVersion,
+        restOfRequestBody
+      );
+
+      return res.json({ textSnippet });
     } catch (err) {
       return next(err);
     }
