@@ -28,6 +28,38 @@ function convertPropsForSqlUpdate(props) {
   return [sqlSubstring, sqlValues];
 }
 
+/**
+ * Creates the SQL WHERE clause substring, between "WHERE" and ";", and an Array
+ * for the values to go with it.  The conditions in the substring are joined by
+ * AND.
+ *
+ * The parameter requires nested Objects, where the first level of keys are used
+ * to append SQL aliases to the column names, and the second level of keys are
+ * the column names.  Aliases are required.
+ *
+ * @param {Object} props - {alias: {column name: value}}.
+ * @returns {Array} The SQL WHERE substring in the first index, and an Array for
+ *  the associated values in the second index.
+ */
+function convertPropsForSqlWhereClause(props) {
+  const whereClauseConditions = [];
+  const whereClauseValues = [];
+  let parameterizedQueryNumber = 1;
+
+  Object.entries(props).forEach(([alias, columnProps]) => {
+    Object.entries(columnProps).forEach(([columnName, columnValue]) => {
+      whereClauseConditions.push(
+        `${alias}.${camelToSnakeCase(
+          columnName
+        )} = $${parameterizedQueryNumber++}`
+      );
+      whereClauseValues.push(columnValue);
+    });
+  });
+
+  return [whereClauseConditions.join(' AND '), whereClauseValues];
+}
+
 // ==================================================
 
-module.exports = { convertPropsForSqlUpdate };
+module.exports = { convertPropsForSqlUpdate, convertPropsForSqlWhereClause };
