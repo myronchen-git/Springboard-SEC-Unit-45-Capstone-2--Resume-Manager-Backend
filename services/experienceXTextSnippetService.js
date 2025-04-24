@@ -257,6 +257,83 @@ async function updateTextSnippet(
 }
 
 /**
+ * Changes the order of the text snippets in an experience in a document.  The
+ * text snippet versions are not needed, because there is only be one text
+ * snippet for a particular text snippet ID in an experience in a specific
+ * document.
+ *
+ * @param {String} username - Name of user that wants to interact with the
+ *  document.  This should be the owner.
+ * @param {Number} documentId - ID of the document that the experience belongs
+ *  to.
+ * @param {Number} experienceId - ID of the experience that is having its text
+ *  snippets reordered.
+ * @param {Number[]} textSnippetIds - List of text snippet IDs with the desired
+ *  ordering.
+ * @returns {TextSnippet[]} A list of TextSnippet instances, in order of
+ *  position within experience and document.
+ */
+async function updateExperienceXTextSnippetsPositions(
+  username,
+  documentId,
+  experienceId,
+  textSnippetIds
+) {
+  const logPrefix =
+    `${fileName}.updateExperience_x_textSnippetsPositions(` +
+    `username = "${username}", ` +
+    `documentId = ${documentId}, ` +
+    `experienceId = ${experienceId}, ` +
+    `textSnippetIds = ${JSON.stringify(textSnippetIds)})`;
+  logger.verbose(logPrefix);
+
+  // Experience ID does not need to be validated, because only experiences from
+  // a user can only be added to that user's documents.  There would be no
+  // documents_x_experiences entries if the experience ID does not belong to the
+  // user.
+  await validateOwnership(Document, username, { id: documentId }, logPrefix);
+
+  const documentXExperienceId = (
+    await Document_X_Experience.get({
+      documentId,
+      experienceId,
+    })
+  ).id;
+
+  // Verify that textSnippetIds contains all of the text snippets in the
+  // experience in the document.
+  const experiencesXTextSnippets = await Experience_X_Text_Snippet.getAll(
+    documentXExperienceId
+  );
+  if (
+    experiencesXTextSnippets.length !== textSnippetIds.length ||
+    !experiencesXTextSnippets.every((ext) =>
+      textSnippetIds.includes(ext.textSnippetId)
+    )
+  ) {
+    logger.error(
+      `${logPrefix}: Provided text snippet IDs do not exactly ` +
+        'match those in document.'
+    );
+    throw new BadRequestError(
+      'All text snippets, and only those, need to be included ' +
+        'when updating their positions in an experience in a document.'
+    );
+  }
+
+  await Experience_X_Text_Snippet.updateAllPositions(
+    documentXExperienceId,
+    textSnippetIds
+  );
+
+  return await TextSnippet.getAllForExperienceInDocument(
+    username,
+    documentId,
+    experienceId
+  );
+}
+
+/**
  * Deletes an experience-text snippet relationship.  Document ownership is first
  * verified.
  *
@@ -298,5 +375,6 @@ module.exports = {
   getTextSnippets,
   createExperience_x_textSnippet,
   updateTextSnippet,
+  updateExperienceXTextSnippetsPositions,
   deleteExperience_x_textSnippet,
 };

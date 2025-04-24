@@ -4,6 +4,8 @@ const db = require('../database/db');
 
 const Relationship = require('./relationship');
 
+const { camelToSnakeCase } = require('../util/caseConversions');
+
 const logger = require('../util/logger');
 
 // ==================================================
@@ -177,6 +179,34 @@ class Experience_X_Text_Snippet extends Relationship {
       notFoundLog,
       serverErrorMessage
     );
+  }
+
+  /**
+   * Updates the positions of all text snippets in an experience in a document.
+   *
+   * @param {Number} documentXExperienceId - ID of the document-experience
+   *  relationship that is having its text snippets reordered.
+   * @param {Number[]} textSnippetIds - List of text snippets IDs with the
+   *  desired ordering.
+   * @returns {Experience_X_Text_Snippet[]} A list of Experience_X_Text_Snippet
+   *  instances.
+   */
+  static async updateAllPositions(documentXExperienceId, textSnippetIds) {
+    let name = 'documentXExperienceId';
+    const attachTo = {
+      jsName: name,
+      sqlName: camelToSnakeCase(name),
+      id: documentXExperienceId,
+    };
+
+    name = 'textSnippetId';
+    const attachWiths = {
+      jsName: name,
+      sqlName: camelToSnakeCase(name),
+      ids: textSnippetIds,
+    };
+
+    return await super.updateAllPositions(attachTo, attachWiths);
   }
 
   /**

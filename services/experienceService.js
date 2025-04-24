@@ -195,7 +195,7 @@ async function updateDocument_x_experiencePositions(
     `${fileName}.updateDocument_x_experiencePositions(` +
     `username = "${username}", ` +
     `documentId = ${documentId}, ` +
-    `experienceIds = ${experienceIds})`;
+    `experienceIds = ${JSON.stringify(experienceIds)})`;
   logger.verbose(logPrefix);
 
   await validateOwnership(Document, username, { id: documentId }, logPrefix);

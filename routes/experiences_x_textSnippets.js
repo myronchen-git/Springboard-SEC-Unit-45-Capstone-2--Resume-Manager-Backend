@@ -6,12 +6,14 @@ const urlParamsSchema = require('../schemas/urlParams.json');
 const textSnippetNewSchema = require('../schemas/textSnippetNew.json');
 const textSnippetVersionSchema = require('../schemas/textSnippetVersion.json');
 const textSnippetUpdateSchema = require('../schemas/textSnippetUpdate.json');
+const documentRelationshipPositionsSchema = require('../schemas/documentRelationshipPositions.json');
 
 const {
   createTextSnippet,
   getTextSnippets,
   createExperience_x_textSnippet,
   updateTextSnippet,
+  updateExperienceXTextSnippetsPositions,
   deleteExperience_x_textSnippet,
 } = require('../services/experienceXTextSnippetService');
 const { ensureLoggedIn } = require('../middleware/auth');
@@ -235,6 +237,61 @@ router.patch(
       );
 
       return res.json({ textSnippet });
+    } catch (err) {
+      return next(err);
+    }
+  }
+);
+
+/**
+ * PUT /users/:username/documents/:documentId/experiences/:experienceId
+ * /text-snippets
+ * [ textSnippetId, textSnippetId, ... ] => { textSnippets }
+ *
+ * Authorization required: login
+ *
+ * Updates the positions of all text snippets in an experience in a document.
+ * All text snippets need to be included.
+ *
+ * @param {String} textSnippetId - ID of a text snippet.
+ * @returns {TextSnippet[]} textSnippets - A list of TextSnippet Objects in
+ *  order of position in the experience in the document, each containing text
+ *  snippet info.
+ */
+router.put(
+  '/:username/documents/:documentId/experiences/:experienceId/text-snippets',
+  ensureLoggedIn,
+  async (req, res, next) => {
+    const userPayload = res.locals.user;
+    const { username, documentId, experienceId } = req.params;
+
+    const logPrefix =
+      `PUT /users/${username}/documents/${documentId}` +
+      `/experiences/${experienceId}/text-snippets ` +
+      `(user: ${JSON.stringify(userPayload)}, ` +
+      `request body: ${JSON.stringify(req.body)})`;
+    logger.info(logPrefix + ' BEGIN');
+
+    try {
+      runJsonSchemaValidator(
+        urlParamsSchema,
+        { documentId, experienceId },
+        logPrefix
+      );
+      runJsonSchemaValidator(
+        documentRelationshipPositionsSchema,
+        req.body,
+        logPrefix
+      );
+
+      const textSnippets = await updateExperienceXTextSnippetsPositions(
+        userPayload.username,
+        documentId,
+        experienceId,
+        req.body
+      );
+
+      return res.json({ textSnippets });
     } catch (err) {
       return next(err);
     }

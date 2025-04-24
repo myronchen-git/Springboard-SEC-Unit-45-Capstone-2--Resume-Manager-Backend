@@ -141,6 +141,45 @@ class TextSnippet {
   }
 
   /**
+   * Gets all text snippets for a specified experience in a document from a
+   * user.
+   *
+   * @param {String} owner - Name of the user to get text snippets for.
+   * @param {Number} documentId - ID of the document that the experience belongs
+   *  to.
+   * @param {Number} experienceId - ID of the experience to get text snippets
+   *  for.
+   * @returns {TextSnippet[]} A list of text snippets belonging to an
+   *  experience, ordered by position.
+   */
+  static async getAllForExperienceInDocument(owner, documentId, experienceId) {
+    const logPrefix =
+      `${this.name}.getAllForExperienceInDocument(` +
+      `owner = ${owner}, ` +
+      `documentId = ${documentId}, ` +
+      `experienceId = ${experienceId})`;
+    logger.verbose(logPrefix);
+
+    const queryConfig = {
+      text: `
+      SELECT ${TextSnippet.#allDbColsAsJs('t')}
+      FROM ${TextSnippet.tableName} AS t
+      JOIN ${Experience_X_Text_Snippet.tableName} AS ext
+      ON t.id = ext.text_snippet_id AND t.version = ext.text_snippet_version
+      JOIN ${Document_X_Experience.tableName} AS dxe
+      ON ext.document_x_experience_id = dxe.id
+      WHERE t.owner = $1 AND dxe.document_id = $2 AND dxe.experience_id = $3
+      GROUP BY t.id, t.version, ext.position
+      ORDER BY ext.position;`,
+      values: [owner, documentId, experienceId],
+    };
+
+    const result = await db.query({ queryConfig, logPrefix });
+
+    return result.rows.map((data) => new TextSnippet(...Object.values(data)));
+  }
+
+  /**
    * Retrieves a specific text snippet by ID and version.
    *
    * @param {Object} queryParams - Contains the query parameters for finding a
