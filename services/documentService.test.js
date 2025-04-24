@@ -3,7 +3,7 @@
 const Document = require('../models/document');
 const { updateDocument, deleteDocument } = require('./documentService');
 const {
-  validateDocumentOwner: mockValidateDocumentOwner,
+  validateOwnership: mockValidateOwnership,
 } = require('../util/serviceHelpers');
 
 const {
@@ -34,7 +34,7 @@ describe('updateDocument', () => {
   const mockUpdate = jest.fn();
 
   beforeEach(() => {
-    mockValidateDocumentOwner.mockReset();
+    mockValidateOwnership.mockReset();
     mockUpdate.mockReset();
   });
 
@@ -44,7 +44,7 @@ describe('updateDocument', () => {
       // Arrange
       const document = { owner: username, isMaster: false };
 
-      mockValidateDocumentOwner.mockResolvedValue(document);
+      mockValidateOwnership.mockResolvedValue(document);
       document.update = mockUpdate.mockResolvedValue(document);
 
       Object.freeze(document);
@@ -54,9 +54,10 @@ describe('updateDocument', () => {
 
       // Assert
       expect(updatedDocument).toBe(document);
-      expect(mockValidateDocumentOwner).toHaveBeenCalledWith(
+      expect(mockValidateOwnership).toHaveBeenCalledWith(
+        Document,
         username,
-        documentId,
+        { id: documentId },
         expect.any(String)
       );
       expect(document.update).toHaveBeenCalledWith(props);
@@ -71,7 +72,7 @@ describe('updateDocument', () => {
       const document = { owner: username, isMaster: true };
       const updatedProps = Object.freeze({ documentName: props.documentName });
 
-      mockValidateDocumentOwner.mockResolvedValue(document);
+      mockValidateOwnership.mockResolvedValue(document);
       document.update = mockUpdate.mockResolvedValue(document);
 
       Object.freeze(document);
@@ -85,9 +86,10 @@ describe('updateDocument', () => {
 
       // Assert
       expect(updatedDocument).toBe(document);
-      expect(mockValidateDocumentOwner).toHaveBeenCalledWith(
+      expect(mockValidateOwnership).toHaveBeenCalledWith(
+        Document,
         username,
-        documentId,
+        { id: documentId },
         expect.any(String)
       );
       expect(document.update).toHaveBeenCalledWith({
@@ -108,7 +110,7 @@ describe('updateDocument', () => {
       // Arrange
       const document = { owner: username, isMaster: true };
 
-      mockValidateDocumentOwner.mockResolvedValue(document);
+      mockValidateOwnership.mockResolvedValue(document);
       document.update = mockUpdate.mockResolvedValue(document);
 
       Object.freeze(document);
@@ -120,9 +122,10 @@ describe('updateDocument', () => {
 
       // Assert
       await expect(runFunc).rejects.toThrow(ArgumentError);
-      expect(mockValidateDocumentOwner).toHaveBeenCalledWith(
+      expect(mockValidateOwnership).toHaveBeenCalledWith(
+        Document,
         username,
-        documentId,
+        { id: documentId },
         expect.any(String)
       );
       expect(document.update).not.toHaveBeenCalled();
@@ -140,7 +143,7 @@ describe('deleteDocument', () => {
   const mockDelete = jest.fn();
 
   beforeEach(() => {
-    mockValidateDocumentOwner.mockReset();
+    mockValidateOwnership.mockReset();
     mockDelete.mockReset();
   });
 
@@ -148,16 +151,17 @@ describe('deleteDocument', () => {
     // Arrange
     const document = { owner: username, isMaster: false };
 
-    mockValidateDocumentOwner.mockResolvedValue(document);
+    mockValidateOwnership.mockResolvedValue(document);
     document.delete = mockDelete;
 
     // Act
     await deleteDocument(username, documentId);
 
     // Assert
-    expect(mockValidateDocumentOwner).toHaveBeenCalledWith(
+    expect(mockValidateOwnership).toHaveBeenCalledWith(
+      Document,
       username,
-      documentId,
+      { id: documentId },
       expect.any(String)
     );
     expect(document.delete).toHaveBeenCalled();
@@ -167,7 +171,7 @@ describe('deleteDocument', () => {
     // Arrange
     const document = { owner: username, isMaster: true };
 
-    mockValidateDocumentOwner.mockResolvedValue(document);
+    mockValidateOwnership.mockResolvedValue(document);
     document.delete = mockDelete;
 
     // Act
@@ -177,9 +181,10 @@ describe('deleteDocument', () => {
 
     // Assert
     await expect(runFunc).rejects.toThrow(ForbiddenError);
-    expect(mockValidateDocumentOwner).toHaveBeenCalledWith(
+    expect(mockValidateOwnership).toHaveBeenCalledWith(
+      Document,
       username,
-      documentId,
+      { id: documentId },
       expect.any(String)
     );
     expect(document.delete).not.toHaveBeenCalled();
@@ -189,26 +194,27 @@ describe('deleteDocument', () => {
     // Arrange
     const document = { owner: username, isMaster: false };
 
-    mockValidateDocumentOwner.mockRejectedValue(new NotFoundError());
+    mockValidateOwnership.mockRejectedValue(new NotFoundError());
     document.delete = mockDelete;
 
     // Act
     await deleteDocument(username, documentId);
 
     // Assert
-    expect(mockValidateDocumentOwner).toHaveBeenCalledWith(
+    expect(mockValidateOwnership).toHaveBeenCalledWith(
+      Document,
       username,
-      documentId,
+      { id: documentId },
       expect.any(String)
     );
     expect(document.delete).not.toHaveBeenCalled();
   });
 
-  test('Passes along other Errors from validateDocumentOwner.', async () => {
+  test('Passes along other Errors from validateOwnership.', async () => {
     // Arrange
     const document = { owner: username, isMaster: false };
 
-    mockValidateDocumentOwner.mockRejectedValue(new Error());
+    mockValidateOwnership.mockRejectedValue(new Error());
     document.delete = mockDelete;
 
     // Act
@@ -218,9 +224,10 @@ describe('deleteDocument', () => {
 
     // Assert
     await expect(runFunc).rejects.toThrow();
-    expect(mockValidateDocumentOwner).toHaveBeenCalledWith(
+    expect(mockValidateOwnership).toHaveBeenCalledWith(
+      Document,
       username,
-      documentId,
+      { id: documentId },
       expect.any(String)
     );
     expect(document.delete).not.toHaveBeenCalled();

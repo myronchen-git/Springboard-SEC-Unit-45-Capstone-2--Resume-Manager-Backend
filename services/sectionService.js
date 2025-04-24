@@ -3,10 +3,11 @@
 const path = require('path');
 const fileName = path.basename(__filename, '.js');
 
+const Document = require('../models/document');
 const Section = require('../models/section');
 const Document_X_Section = require('../models/document_x_section');
 const {
-  validateDocumentOwner,
+  validateOwnership,
   getLastPosition,
 } = require('../util/serviceHelpers');
 
@@ -37,7 +38,7 @@ async function createDocument_x_section(username, documentId, sectionId) {
     `sectionId = ${sectionId})`;
   logger.verbose(logPrefix);
 
-  await validateDocumentOwner(username, documentId, logPrefix);
+  await validateOwnership(Document, username, { id: documentId }, logPrefix);
 
   const documents_x_sections = await Document_X_Section.getAll(documentId);
   const nextPosition = getLastPosition(documents_x_sections) + 1;
@@ -77,7 +78,7 @@ async function getSections(username, documentId) {
     `documentId = ${documentId})`;
   logger.verbose(logPrefix);
 
-  await validateDocumentOwner(username, documentId, logPrefix);
+  await validateOwnership(Document, username, { id: documentId }, logPrefix);
 
   return await Section.getAllInDocument(documentId);
 }
@@ -105,7 +106,7 @@ async function updateDocument_x_sectionPositions(
     `sectionIds = [${sectionIds}])`;
   logger.verbose(logPrefix);
 
-  await validateDocumentOwner(username, documentId, logPrefix);
+  await validateOwnership(Document, username, { id: documentId }, logPrefix);
 
   // Verify that sectionIds contains all of the sections in the document.
   const documents_x_sections = await Document_X_Section.getAll(documentId);
@@ -145,7 +146,7 @@ async function deleteDocument_x_section(username, documentId, sectionId) {
     `sectionId = ${sectionId})`;
   logger.verbose(logPrefix);
 
-  await validateDocumentOwner(username, documentId, logPrefix);
+  await validateOwnership(Document, username, { id: documentId }, logPrefix);
 
   await Document_X_Section.delete(documentId, sectionId);
 }

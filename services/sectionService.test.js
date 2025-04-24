@@ -1,5 +1,6 @@
 'use strict';
 
+const Document = require('../models/document');
 const Section = require('../models/section');
 const Document_X_Section = require('../models/document_x_section');
 const {
@@ -7,7 +8,7 @@ const {
   updateDocument_x_sectionPositions,
 } = require('./sectionService');
 const {
-  validateDocumentOwner: mockValidateDocumentOwner,
+  validateOwnership: mockValidateOwnership,
   getLastPosition: mockGetLastPosition,
 } = require('../util/serviceHelpers');
 
@@ -31,7 +32,7 @@ describe('createDocument_x_section', () => {
   const documentId = 1;
 
   beforeEach(() => {
-    mockValidateDocumentOwner.mockReset();
+    mockValidateOwnership.mockReset();
     Document_X_Section.getAll.mockReset();
     mockGetLastPosition.mockReset();
     Document_X_Section.add.mockReset();
@@ -62,9 +63,10 @@ describe('createDocument_x_section', () => {
       // Assert
       expect(document_x_section).toBe(mockDocument_x_section);
 
-      expect(mockValidateDocumentOwner).toHaveBeenCalledWith(
+      expect(mockValidateOwnership).toHaveBeenCalledWith(
+        Document,
         username,
-        documentId,
+        { id: documentId },
         expect.any(String)
       );
 
@@ -105,9 +107,10 @@ describe('createDocument_x_section', () => {
       // Assert
       await expect(runFunc).rejects.toThrow(BadRequestError);
 
-      expect(mockValidateDocumentOwner).toHaveBeenCalledWith(
+      expect(mockValidateOwnership).toHaveBeenCalledWith(
+        Document,
         username,
-        documentId,
+        { id: documentId },
         expect.any(String)
       );
 
@@ -139,7 +142,7 @@ describe('updateDocument_x_sectionPositions', () => {
   ]);
 
   beforeEach(() => {
-    mockValidateDocumentOwner.mockReset();
+    mockValidateOwnership.mockReset();
     Document_X_Section.getAll.mockReset();
     Document_X_Section.updateAllPositions.mockReset();
     Section.getAllInDocument.mockReset();
@@ -165,9 +168,10 @@ describe('updateDocument_x_sectionPositions', () => {
 
       // Assert
       expect(documents_x_sections).toBe(mockArray);
-      expect(mockValidateDocumentOwner).toHaveBeenCalledWith(
+      expect(mockValidateOwnership).toHaveBeenCalledWith(
+        Document,
         username,
-        documentId,
+        { id: documentId },
         expect.any(String)
       );
       expect(Document_X_Section.getAll).toHaveBeenCalledWith(documentId);
@@ -199,9 +203,10 @@ describe('updateDocument_x_sectionPositions', () => {
 
       // Assert
       await expect(runFunc).rejects.toThrow(BadRequestError);
-      expect(mockValidateDocumentOwner).toHaveBeenCalledWith(
+      expect(mockValidateOwnership).toHaveBeenCalledWith(
+        Document,
         username,
-        documentId,
+        { id: documentId },
         expect.any(String)
       );
       expect(Document_X_Section.updateAllPositions).not.toHaveBeenCalled();

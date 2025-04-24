@@ -4,10 +4,7 @@ const path = require('path');
 const fileName = path.basename(__filename, '.js');
 
 const Document = require('../models/document');
-const {
-  validateDocumentOwner,
-  validateOwnership,
-} = require('../util/serviceHelpers');
+const { validateOwnership } = require('../util/serviceHelpers');
 
 const {
   ForbiddenError,
@@ -59,7 +56,12 @@ async function updateDocument(username, documentId, props) {
     `props = ${JSON.stringify(props)})`;
   logger.verbose(logPrefix);
 
-  const document = await validateDocumentOwner(username, documentId, logPrefix);
+  const document = await validateOwnership(
+    Document,
+    username,
+    { id: documentId },
+    logPrefix
+  );
 
   if (document.isMaster) {
     if (!props.documentName || Object.keys(props).length > 1) {
@@ -95,7 +97,12 @@ async function deleteDocument(username, documentId) {
 
   let document;
   try {
-    document = await validateDocumentOwner(username, documentId, logPrefix);
+    document = await validateOwnership(
+      Document,
+      username,
+      { id: documentId },
+      logPrefix
+    );
   } catch (err) {
     if (err instanceof NotFoundError) {
       return;
