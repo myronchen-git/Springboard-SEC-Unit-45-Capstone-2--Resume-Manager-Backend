@@ -1,17 +1,11 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "http://example.com/schemas/url-params.json",
-  "type": "object",
+
   "title": "URL Parameter Inputs",
   "description": "Validates URL parameters.  Checks if inputs are the correct type, format, pattern, etc..",
-  "additionalProperties": false,
-  "anyOf": [
-    { "title": "Document ID format", "required": ["documentId"] },
-    { "title": "Section ID format", "required": ["sectionId"] },
-    { "title": "Education ID format", "required": ["educationId"] },
-    { "title": "Experience ID format", "required": ["experienceId"] },
-    { "title": "Text snippet ID format", "required": ["textSnippetId"] }
-  ],
+
+  "type": "object",
   "properties": {
     "documentId": {
       "type": "string",
@@ -38,5 +32,24 @@
       "pattern": "^\\d+$",
       "examples": ["1"]
     }
-  }
+  },
+  "examples": [
+    { "documentId": "1" },
+    { "documentId": "1", "educationId": "1" },
+    {
+      "documentId": "1",
+      "sectionId": "1",
+      "educationId": "1",
+      "experienceId": "1",
+      "textSnippetId": "1"
+    }
+  ],
+  "additionalProperties": false,
+  "anyOf": [
+    { "title": "Document ID format", "required": ["documentId"] },
+    { "title": "Section ID format", "required": ["sectionId"] },
+    { "title": "Education ID format", "required": ["educationId"] },
+    { "title": "Experience ID format", "required": ["experienceId"] },
+    { "title": "Text snippet ID format", "required": ["textSnippetId"] }
+  ]
 }
