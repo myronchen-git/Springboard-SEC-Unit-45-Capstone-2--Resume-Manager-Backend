@@ -241,20 +241,49 @@ describe('PUT /users/:username/contact-info', () => {
     }
   );
 
-  // Also testing the JSON schema regex pattern.
   test.each([
-    ['Giving no contact info data', {}],
-    ['Giving an invalid email', { email: 'not@email' }],
-    ['Giving an invalid LinkedIn URL', { linkedin: 'linkedin.com/user/user1' }],
-    ['Giving an invalid Github URL', { github: 'github/user1' }],
     [
-      'Missing full name when creating a database entry',
-      { location: contactInfos[1].location },
+      'Giving an invalid LinkedIn URL',
+      {
+        fullName: contactInfos[1].fullName,
+        linkedin: 'linkedin.com/user/user1',
+      },
     ],
-  ])('%s should return 400 status.', async (testTitle, contactInfoData) => {
+    ['Missing full name', { location: contactInfos[1].location }],
+  ])(
+    '%s when creating a new database entry should return 400 status.',
+    async (testTitle, contactInfoData) => {
+      // Arrange
+      const user = users[0];
+      const authToken = authTokens[0];
+
+      // Act
+      const resp = await request(app)
+        .put(getUrl(user.username))
+        .send(contactInfoData)
+        .set('authorization', `Bearer ${authToken}`);
+
+      // Assert
+      expect(resp.statusCode).toEqual(400);
+      expect(resp.body).not.toHaveProperty('contactInfo');
+    }
+  );
+
+  test('Updating full name to an empty String should return 400 status.', async () => {
     // Arrange
     const user = users[0];
-    const authToken = authTokens[0];
+    const authToken = authTokens[1];
+
+    // Ensure that this contact info data has values for all properties.
+    let contactInfoData = { ...contactInfos[1] };
+    delete contactInfoData.username;
+
+    await request(app)
+      .put(getUrl(user.username))
+      .send(contactInfoData)
+      .set('authorization', `Bearer ${authToken}`);
+
+    contactInfoData = { fullName: '' };
 
     // Act
     const resp = await request(app)

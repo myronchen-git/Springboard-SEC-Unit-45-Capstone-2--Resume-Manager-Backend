@@ -85,7 +85,8 @@ router.patch('/:username', ensureLoggedIn, async (req, res, next) => {
  *
  * Authorization required: login
  *
- * Full name is required when creating a new contact info entry in the database.
+ * Creates a new contact info entry or updates an existing one.  Full name is
+ * required when creating a new contact info entry in the database.
  *
  * @param {String} [fullName] - Full name of the user.
  * @param {String} [location] - Any kind of location description for the user.
