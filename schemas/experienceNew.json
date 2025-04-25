@@ -1,11 +1,11 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "http://example.com/schemas/experience-new.json",
-  "type": "object",
+
   "title": "New Experience",
   "description": "Required and optional info for creating a new experience.",
-  "required": ["title", "organization", "location", "startDate"],
-  "additionalProperties": false,
+
+  "type": "object",
   "properties": {
     "title": {
       "type": "string",
@@ -56,5 +56,7 @@
       "startDate": "2000-01-01",
       "endDate": "2004-12-31"
     }
-  ]
+  ],
+  "additionalProperties": false,
+  "required": ["title", "organization", "location", "startDate"]
 }

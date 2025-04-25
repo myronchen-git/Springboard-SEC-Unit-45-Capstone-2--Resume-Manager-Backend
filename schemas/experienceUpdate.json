@@ -6,14 +6,6 @@
   "description": "Allowed info for updating an experience.",
 
   "type": "object",
-  "additionalProperties": false,
-  "anyOf": [
-    { "title": "job title", "required": ["title"] },
-    { "title": "organization", "required": ["organization"] },
-    { "title": "location", "required": ["location"] },
-    { "title": "start date", "required": ["startDate"] },
-    { "title": "end date", "required": ["endDate"] }
-  ],
   "properties": {
     "title": {
       "type": "string",
@@ -64,5 +56,13 @@
       "startDate": "2000-01-01",
       "endDate": "2004-12-31"
     }
+  ],
+  "additionalProperties": false,
+  "anyOf": [
+    { "title": "job title", "required": ["title"] },
+    { "title": "organization", "required": ["organization"] },
+    { "title": "location", "required": ["location"] },
+    { "title": "start date", "required": ["startDate"] },
+    { "title": "end date", "required": ["endDate"] }
   ]
 }
