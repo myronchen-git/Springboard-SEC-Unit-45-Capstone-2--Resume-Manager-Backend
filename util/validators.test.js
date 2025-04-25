@@ -47,15 +47,18 @@ describe('runJsonSchemaValidator', () => {
     [
       contactInfoSchema,
       { fullName: '' },
-      'instance.fullName does not meet minimum length of 1',
+      'instance.fullName does not meet minimum length of 2',
     ],
     [contactInfoSchema, { email: 'email' }, 'Invalid email.'],
     [contactInfoSchema, { linkedin: 'linkedin' }, 'Invalid linkedin.'],
     [contactInfoSchema, { github: 'github' }, 'Invalid github.'],
-  ])('Gives correct error messages.', async (schema, reqBody, errorMessage) => {
-    // Act / Assert
-    expect(() => runJsonSchemaValidator(schema, reqBody, '')).toThrow(
-      new BadRequestError(errorMessage)
-    );
-  });
+  ])(
+    'Gives correct error messages for case %#.',
+    async (schema, reqBody, errorMessage) => {
+      // Act / Assert
+      expect(() => runJsonSchemaValidator(schema, reqBody, '')).toThrow(
+        new BadRequestError(errorMessage)
+      );
+    }
+  );
 });

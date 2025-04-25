@@ -9,7 +9,7 @@
   "properties": {
     "fullName": {
       "type": "string",
-      "minLength": 1,
+      "minLength": 2,
       "maxLength": 50,
       "examples": ["First Last"]
     },
@@ -32,7 +32,7 @@
     },
     "phone": {
       "type": "string",
-      "maxLength": 20,
+      "pattern": "^$|^(?=(?:.*\\d){5,})(?=[^(]*\\(?[^(]*$)(?=[^)]*\\)?[^)]*$)[\\d+\\-\\(\\) ]{5,20}$",
       "examples": [
         "123-456-7890",
         "(123) 456-7890",

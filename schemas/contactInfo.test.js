@@ -27,6 +27,10 @@ describe('contactInfo', () => {
       if (prop !== 'fullName') tests.push([{ [prop]: '' }]);
       return tests;
     }, []),
+    [{ phone: '123-456-7890' }],
+    [{ phone: '(123) 456-7890' }],
+    [{ phone: '+123 45 6789' }],
+    [{ phone: '+1 (123) 12 12345' }],
   ])('Success for input %s', (str) => {
     // Act
     const result = jsonschema.validate(str, schema);
@@ -44,6 +48,14 @@ describe('contactInfo', () => {
     [{ email: 'not@email' }],
     // Phone number too long.
     [{ phone: '1'.repeat(21) }],
+    // Phone number not valid.
+    [{ phone: '123-456`-7890' }],
+    // Phone number not valid.
+    [{ phone: '-----' }],
+    // Phone number not valid.
+    [{ phone: '((12345))' }],
+    // Phone number not valid.
+    [{ phone: '(123)-----' }],
     // Linkedin not in correct format.
     [{ linkedin: 'linkedin.com/user/user1' }],
     // Linkedin not in correct format.
