@@ -6,12 +6,6 @@
   "description": "Allowed info for updating a text snippet.",
 
   "type": "object",
-  "additionalProperties": false,
-  "anyOf": [
-    { "title": "type", "required": ["type"] },
-    { "title": "content", "required": ["content"] }
-  ],
-
   "properties": {
     "type": {
       "type": "string",
@@ -23,11 +17,15 @@
       "examples": ["Wrote code using JavaScript on React framework ...."]
     }
   },
-
   "examples": [
     {
       "type": "plain",
       "content": "Wrote code using JavaScript on React framework ...."
     }
+  ],
+  "additionalProperties": false,
+  "anyOf": [
+    { "title": "type", "required": ["type"] },
+    { "title": "content", "required": ["content"] }
   ]
 }
