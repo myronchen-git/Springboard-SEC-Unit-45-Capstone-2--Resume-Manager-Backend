@@ -24,6 +24,8 @@ const router = new express.Router();
  *
  * Authorization required: none
  *
+ * Creates a new user.
+ *
  * @param {String} username - Username for the new user.
  * @param {String} password - Password for the new user.
  * @returns {String} authToken - A JWT that can be used to authenticate further

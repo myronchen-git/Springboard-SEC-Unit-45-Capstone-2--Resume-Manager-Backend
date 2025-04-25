@@ -1,11 +1,11 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "http://example.com/schemas/user-register.json",
-  "type": "object",
+
   "title": "Register User",
   "description": "Required info when registering.",
-  "required": ["username", "password"],
-  "additionalProperties": false,
+
+  "type": "object",
   "properties": {
     "username": {
       "type": "string",
@@ -25,5 +25,7 @@
       "username": "abc",
       "password": "123Ab!"
     }
-  ]
+  ],
+  "additionalProperties": false,
+  "required": ["username", "password"]
 }

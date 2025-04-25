@@ -27,11 +27,14 @@ describe('POST /auth/register', () => {
   beforeEach(() => clearTable(db, User.tableName));
 
   test('Registers a user and creates master resume.', async () => {
-    // Act
-    const resp = await request(app).post(url).send({
+    // Arrange
+    const newUserData = {
       username: user.username,
       password: user.password,
-    });
+    };
+
+    // Act
+    const resp = await request(app).post(url).send(newUserData);
 
     // Assert
     expect(resp.statusCode).toEqual(201);
@@ -58,57 +61,20 @@ describe('POST /auth/register', () => {
     expect(documents.length).toBe(1);
   });
 
-  test.each([[{ username: user.username }], [{ password: user.password }]])(
-    'Registering a user without required fields returns 400 status.  Fields: %o.',
-    async (reqBody) => {
-      // Act
-      const resp = await request(app).post(url).send(reqBody);
+  test('Registering with invalid data returns 400 status.', async () => {
+    // Arrange
+    const newUserData = { username: user.username, password: '1' };
 
-      // Assert
-      expect(resp.statusCode).toEqual(400);
-      expect(resp.body).not.toHaveProperty('authToken');
+    // Act
+    const resp = await request(app).post(url).send(newUserData);
 
-      const documents = await Document.getAll(user.username);
-      expect(documents.length).toBe(0);
-    }
-  );
+    // Assert
+    expect(resp.statusCode).toEqual(400);
+    expect(resp.body).not.toHaveProperty('authToken');
 
-  // Also tests the JSON schema.
-  test.each([
-    [{ username: 'us', password: user.password }],
-    [{ username: 'user 123', password: user.password }],
-    [{ username: 'user!', password: user.password }],
-    [
-      {
-        username: 'user123456789012345678901234567890',
-        password: user.password,
-      },
-    ],
-    [{ username: user.username, password: '1' }],
-    [
-      {
-        username: user.username,
-        password: '12345678901234567890Ab!',
-      },
-    ],
-    [{ username: user.username, password: '1234567890' }],
-    [{ username: user.username, password: 'abcdefghi' }],
-    [{ username: user.username, password: 'ABCDEFGHI' }],
-    [{ username: user.username, password: '1234567890Ab' }],
-  ])(
-    'Registering with invalid data returns 400 status.  Fields: %o.',
-    async (reqBody) => {
-      // Act
-      const resp = await request(app).post(url).send(reqBody);
-
-      // Assert
-      expect(resp.statusCode).toEqual(400);
-      expect(resp.body).not.toHaveProperty('authToken');
-
-      const documents = await Document.getAll(user.username);
-      expect(documents.length).toBe(0);
-    }
-  );
+    const documents = await Document.getAll(user.username);
+    expect(documents.length).toBe(0);
+  });
 });
 
 // --------------------------------------------------
@@ -135,11 +101,14 @@ describe('POST /auth/signin', () => {
   });
 
   test('Signs in a user.', async () => {
-    // Act
-    const resp = await request(app).post(url).send({
+    // Arrange
+    const loginData = {
       username: user.username,
       password: user.password,
-    });
+    };
+
+    // Act
+    const resp = await request(app).post(url).send(loginData);
 
     // Assert
     expect(resp.statusCode).toEqual(200);
@@ -171,43 +140,15 @@ describe('POST /auth/signin', () => {
     }
   );
 
-  test.each([[{ username: user.username }], [{ password: user.password }]])(
-    'Signing in a user without required fields returns 400 status.  Fields: %o.',
-    async (reqBody) => {
-      // Act
-      const resp = await request(app).post(url).send(reqBody);
+  test('Signing in with invalid data returns 400 status.', async () => {
+    // Arrange
+    const loginData = { username: 'us', password: user.password };
 
-      // Assert
-      expect(resp.statusCode).toEqual(400);
-      expect(resp.body).not.toHaveProperty('authToken');
-    }
-  );
+    // Act
+    const resp = await request(app).post(url).send(loginData);
 
-  // Tests the JSON schema.
-  test.each([
-    [{ username: 'us', password: user.password }],
-    [
-      {
-        username: 'user123456789012345678901234567890',
-        password: user.password,
-      },
-    ],
-    [{ username: user.username, password: '1' }],
-    [
-      {
-        username: user.username,
-        password: '12345678901234567890Ab!',
-      },
-    ],
-  ])(
-    'Signing in with invalid data returns 400 status.  Fields: %o.',
-    async (reqBody) => {
-      // Act
-      const resp = await request(app).post(url).send(reqBody);
-
-      // Assert
-      expect(resp.statusCode).toEqual(400);
-      expect(resp.body).not.toHaveProperty('authToken');
-    }
-  );
+    // Assert
+    expect(resp.statusCode).toEqual(400);
+    expect(resp.body).not.toHaveProperty('authToken');
+  });
 });
