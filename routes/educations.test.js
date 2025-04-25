@@ -113,8 +113,6 @@ describe('POST /users/:username/documents/:documentId/educations', () => {
     });
   });
 
-  // To be uncommented after completing PUT and DELETE routes.
-  /*
   test(
     'Adds a new education to a document at the correct position ' +
       'when there are multiple non-sequential, out-of-order educations.',
@@ -152,7 +150,6 @@ describe('POST /users/:username/documents/:documentId/educations', () => {
       expect(resp.body.document_x_education.position).toBe(4);
     }
   );
-  */
 
   test('Giving an invalid document ID in the URL should return 400 status.', async () => {
     // Arrange
