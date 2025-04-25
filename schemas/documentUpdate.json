@@ -6,13 +6,6 @@
   "description": "Allowed info for updating a document.",
 
   "type": "object",
-  "additionalProperties": false,
-  "anyOf": [
-    { "title": "document name", "required": ["documentName"] },
-    { "title": "is template", "required": ["isTemplate"] },
-    { "title": "is locked", "required": ["isLocked"] }
-  ],
-
   "properties": {
     "documentName": {
       "type": "string",
@@ -26,12 +19,17 @@
       "type": "boolean"
     }
   },
-
   "examples": [
     {
       "documentName": "New document",
       "isTemplate": "false",
       "isLocked": "true"
     }
+  ],
+  "additionalProperties": false,
+  "anyOf": [
+    { "title": "document name", "required": ["documentName"] },
+    { "title": "is template", "required": ["isTemplate"] },
+    { "title": "is locked", "required": ["isLocked"] }
   ]
 }

@@ -1,11 +1,11 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "http://example.com/schemas/document-new.json",
-  "type": "object",
+
   "title": "New Document",
   "description": "Required info for creating a new document.",
-  "required": ["documentName", "isTemplate"],
-  "additionalProperties": false,
+
+  "type": "object",
   "properties": {
     "documentName": {
       "type": "string",
@@ -21,5 +21,7 @@
       "documentName": "New document",
       "isTemplate": "false"
     }
-  ]
+  ],
+  "additionalProperties": false,
+  "required": ["documentName", "isTemplate"]
 }
