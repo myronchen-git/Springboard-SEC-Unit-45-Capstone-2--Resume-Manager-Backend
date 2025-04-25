@@ -6,18 +6,6 @@
   "description": "Allowed info for updating an education.",
 
   "type": "object",
-  "additionalProperties": false,
-  "anyOf": [
-    { "title": "school name", "required": ["school"] },
-    { "title": "school location", "required": ["location"] },
-    { "title": "start date", "required": ["startDate"] },
-    { "title": "end date", "required": ["endDate"] },
-    { "title": "degree", "required": ["degree"] },
-    { "title": "gpa", "required": ["gpa"] },
-    { "title": "awards and honors", "required": ["awardsAndHonors"] },
-    { "title": "activities", "required": ["activities"] }
-  ],
-
   "properties": {
     "school": {
       "type": "string",
@@ -78,7 +66,6 @@
       ]
     }
   },
-
   "examples": [
     {
       "school": "University 01"
@@ -100,5 +87,16 @@
       "awardsAndHonors": "Dean's List",
       "activities": "student council"
     }
+  ],
+  "additionalProperties": false,
+  "anyOf": [
+    { "title": "school name", "required": ["school"] },
+    { "title": "school location", "required": ["location"] },
+    { "title": "start date", "required": ["startDate"] },
+    { "title": "end date", "required": ["endDate"] },
+    { "title": "degree", "required": ["degree"] },
+    { "title": "gpa", "required": ["gpa"] },
+    { "title": "awards and honors", "required": ["awardsAndHonors"] },
+    { "title": "activities", "required": ["activities"] }
   ]
 }

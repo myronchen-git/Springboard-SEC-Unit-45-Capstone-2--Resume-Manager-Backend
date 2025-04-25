@@ -1,11 +1,11 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "http://example.com/schemas/education-new.json",
-  "type": "object",
+
   "title": "New Education",
   "description": "Required and optional info for creating a new education.",
-  "required": ["school", "location", "startDate", "endDate", "degree"],
-  "additionalProperties": false,
+
+  "type": "object",
   "properties": {
     "school": {
       "type": "string",
@@ -87,5 +87,7 @@
       "awardsAndHonors": "Dean's List",
       "activities": "student council"
     }
-  ]
+  ],
+  "additionalProperties": false,
+  "required": ["school", "location", "startDate", "endDate", "degree"]
 }
