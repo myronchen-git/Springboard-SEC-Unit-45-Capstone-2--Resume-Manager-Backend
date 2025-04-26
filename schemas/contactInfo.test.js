@@ -16,8 +16,6 @@ describe('contactInfo', () => {
   Object.freeze(contactInfo);
 
   test.each([
-    // Contains no properties.
-    [{}],
     // Put each property in contactInfo into its own test.
     ...Object.entries(contactInfo).map((prop) => [Object.fromEntries([prop])]),
     // Contains all properties at once.
@@ -64,6 +62,8 @@ describe('contactInfo', () => {
     [{ github: 'github/user1' }],
     // Github not in correct format.
     [{ github: 'example.com/user1' }],
+    // Missing everything.
+    [{}],
   ])('Failure for input %s', (str) => {
     // Act
     const result = jsonschema.validate(str, schema);

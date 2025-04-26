@@ -62,5 +62,13 @@
       "github": "github.com/name"
     }
   ],
-  "additionalProperties": false
+  "additionalProperties": false,
+  "anyOf": [
+    { "title": "full name", "required": ["fullName"] },
+    { "title": "location", "required": ["location"] },
+    { "title": "email", "required": ["email"] },
+    { "title": "phone", "required": ["phone"] },
+    { "title": "linkedin", "required": ["linkedin"] },
+    { "title": "github", "required": ["github"] }
+  ]
 }
