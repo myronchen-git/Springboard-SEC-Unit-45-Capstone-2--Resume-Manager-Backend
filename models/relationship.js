@@ -235,7 +235,9 @@ class Relationship {
     notFoundLog,
     serverErrorMessage
   ) {
-    const logPrefix = `${this.constructor.name}.update(${position})`;
+    const logPrefix = `${this.constructor.name}${JSON.stringify(
+      this
+    )}.update(${position})`;
     logger.verbose(logPrefix);
 
     if (position < 0) {
@@ -272,7 +274,7 @@ class Relationship {
    *  message, describing what was deleted.  See code.
    */
   static async delete(queryConfig, deletedLog) {
-    const logPrefix = `${this.constructor.name}.delete()`;
+    const logPrefix = `${this.name}.delete()`;
     logger.verbose(logPrefix);
 
     const result = await db.query({ queryConfig, logPrefix });
@@ -280,9 +282,7 @@ class Relationship {
     if (result.rowCount) {
       logger.info(`${logPrefix}: ${result.rowCount} ${deletedLog}`);
     } else {
-      logger.info(
-        `${logPrefix}: 0 ${this.constructor.tableName} entries deleted.`
-      );
+      logger.info(`${logPrefix}: 0 ${this.tableName} entries deleted.`);
     }
   }
 }

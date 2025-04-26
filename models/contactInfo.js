@@ -55,7 +55,7 @@ class ContactInfo {
    *  contact information.
    */
   static async add(props) {
-    const logPrefix = `ContactInfo.add(${JSON.stringify(props)})`;
+    const logPrefix = `${this.name}.add(${JSON.stringify(props)})`;
     logger.verbose(logPrefix);
 
     // Allowed properties/attributes.
@@ -93,7 +93,7 @@ class ContactInfo {
    *  contact information.
    */
   static async get(queryParams) {
-    const logPrefix = `ContactInfo.get(${JSON.stringify(queryParams)})`;
+    const logPrefix = `${this.name}.get(${JSON.stringify(queryParams)})`;
     logger.verbose(logPrefix);
 
     // Allowed parameters.
@@ -137,7 +137,9 @@ class ContactInfo {
    *  called on, but with updated property values.
    */
   async update(props) {
-    const logPrefix = `ContactInfo.update(${JSON.stringify(props)})`;
+    const logPrefix = `${this.constructor.name}${JSON.stringify(
+      this
+    )}.update(${JSON.stringify(props)})`;
     logger.verbose(logPrefix);
 
     const [sqlSubstring, sqlValues] = convertPropsForSqlUpdate(props);
@@ -177,7 +179,9 @@ class ContactInfo {
    * properties/fields.  Remember to delete the instance this belongs to!
    */
   async delete() {
-    const logPrefix = 'ContactInfo.delete()';
+    const logPrefix = `${this.constructor.name}${JSON.stringify(
+      this
+    )}.delete()`;
     logger.verbose(logPrefix);
 
     const queryConfig = {

@@ -45,7 +45,7 @@ class Skill {
    * @returns {Skill} A new Skill instance that contains the skill's data.
    */
   static async add(props) {
-    const logPrefix = `Skill.add(${JSON.stringify(props)})`;
+    const logPrefix = `${this.name}.add(${JSON.stringify(props)})`;
     logger.verbose(logPrefix);
 
     // Allowed properties/attributes.
@@ -90,7 +90,7 @@ class Skill {
    * @returns {Skill[]} A list of Skill instances.
    */
   static async getAll(owner) {
-    const logPrefix = `Skill.getAll(${owner})`;
+    const logPrefix = `${this.name}.getAll(${owner})`;
     logger.verbose(logPrefix);
 
     const queryConfig = {
@@ -116,7 +116,7 @@ class Skill {
    * @returns {Skill} A new Skill instance that contains the skill's data.
    */
   static async get(queryParams) {
-    const logPrefix = `Skill.get(${JSON.stringify(queryParams)})`;
+    const logPrefix = `${this.name}.get(${JSON.stringify(queryParams)})`;
     logger.verbose(logPrefix);
 
     // Allowed parameters.
@@ -153,7 +153,9 @@ class Skill {
    *  called on, but with updated property values.
    */
   async update(props) {
-    const logPrefix = `Skill.update(${JSON.stringify(props)})`;
+    const logPrefix = `${this.constructor.name}${JSON.stringify(
+      this
+    )}.update(${JSON.stringify(props)})`;
     logger.verbose(logPrefix);
 
     const [sqlSubstring, sqlValues] = convertPropsForSqlUpdate(props);
@@ -188,7 +190,9 @@ class Skill {
    * properties/fields.  Remember to delete the instance this belongs to!
    */
   async delete() {
-    const logPrefix = `Skill.delete()`;
+    const logPrefix = `${this.constructor.name}${JSON.stringify(
+      this
+    )}.delete()`;
     logger.verbose(logPrefix);
 
     const queryConfig = {

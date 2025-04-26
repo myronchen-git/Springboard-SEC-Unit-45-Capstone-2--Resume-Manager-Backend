@@ -214,7 +214,9 @@ class Experience {
    *  called on, but with updated property values.
    */
   async update(props) {
-    const logPrefix = `${this.name}.update(${JSON.stringify(props)})`;
+    const logPrefix = `${this.constructor.name}${JSON.stringify(
+      this
+    )}.update(${JSON.stringify(props)})`;
     logger.verbose(logPrefix);
 
     const [sqlSubstring, sqlValues] = convertPropsForSqlUpdate(props);
@@ -251,7 +253,9 @@ class Experience {
    * properties/fields.  Remember to delete the instance this belongs to!
    */
   async delete() {
-    const logPrefix = `${this.name}.delete()`;
+    const logPrefix = `${this.constructor.name}${JSON.stringify(
+      this
+    )}.delete()`;
     logger.verbose(logPrefix);
 
     const queryConfig = {

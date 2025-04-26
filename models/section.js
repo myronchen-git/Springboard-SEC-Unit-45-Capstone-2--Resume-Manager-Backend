@@ -37,7 +37,7 @@ class Section {
    *  data.
    */
   static async add(sectionProps) {
-    const logPrefix = `Section.add(${JSON.stringify(sectionProps)})`;
+    const logPrefix = `${this.name}.add(${JSON.stringify(sectionProps)})`;
     logger.verbose(logPrefix);
 
     // Allowed properties/attributes.
@@ -62,7 +62,7 @@ class Section {
    * @returns {Section[]} A list of Section instances.
    */
   static async getAll() {
-    const logPrefix = 'Section.getAll()';
+    const logPrefix = `${this.name}.getAll()`;
     logger.verbose(logPrefix);
 
     const queryConfig = {
@@ -84,7 +84,7 @@ class Section {
    * @returns {Section[]} A list of Section instances.
    */
   static async getAllInDocument(documentId) {
-    const logPrefix = `Section.getAllInDocument(documentId = ${documentId})`;
+    const logPrefix = `${this.name}.getAllInDocument(documentId = ${documentId})`;
     logger.verbose(logPrefix);
 
     const queryConfig = {
@@ -114,7 +114,7 @@ class Section {
    *  data.
    */
   static async get(queryParams) {
-    const logPrefix = `Section.get(${JSON.stringify(queryParams)})`;
+    const logPrefix = `${this.name}.get(${JSON.stringify(queryParams)})`;
     logger.verbose(logPrefix);
 
     // Allowed parameters.
@@ -149,7 +149,9 @@ class Section {
    *  on, but with updated property values.
    */
   async update(props) {
-    const logPrefix = `Section.update(${JSON.stringify(props)})`;
+    const logPrefix = `${this.constructor.name}${JSON.stringify(
+      this
+    )}.update(${JSON.stringify(props)})`;
     logger.verbose(logPrefix);
 
     const [sqlSubstring, sqlValues] = convertPropsForSqlUpdate(props);
@@ -190,7 +192,9 @@ class Section {
    * properties/fields.  Remember to delete the instance this belongs to!
    */
   async delete() {
-    const logPrefix = `Section.delete()`;
+    const logPrefix = `${this.constructor.name}${JSON.stringify(
+      this
+    )}.delete()`;
     logger.verbose(logPrefix);
 
     const queryConfig = {

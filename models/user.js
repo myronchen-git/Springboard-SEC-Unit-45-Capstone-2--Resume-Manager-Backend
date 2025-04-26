@@ -42,7 +42,8 @@ class User {
    */
   static async register({ username, password }) {
     const logPrefix =
-      'User.register(' + `{ username: '${username}', password: (password) })`;
+      `${this.name}.register(` +
+      `{ username: '${username}', password: (password) })`;
     logger.verbose(logPrefix);
 
     const hashedPassword = await bcrypt.hash(password, BCRYPT_WORK_FACTOR);
@@ -82,7 +83,8 @@ class User {
    */
   static async signin({ username, password }) {
     const logPrefix =
-      `User.signin(` + `{ username: '${username}', password: (password) })`;
+      `${this.name}.signin(` +
+      `{ username: '${username}', password: (password) })`;
     logger.verbose(logPrefix);
 
     const queryConfig = {
@@ -119,7 +121,8 @@ class User {
    */
   static async update(username, { password }) {
     const logPrefix =
-      'User.update( ' + `username: '${username}', { password: (password) } )`;
+      `${this.name}.update(` +
+      `{ username: '${username}', { password: (password) } )`;
     logger.verbose(logPrefix + `: Updating info for "${username}".`);
 
     const hashedPassword = await bcrypt.hash(password, BCRYPT_WORK_FACTOR);
@@ -180,7 +183,9 @@ class User {
    * instance variable.  Remember to delete the User instance this belongs to!
    */
   async delete() {
-    const logPrefix = `User.delete()`;
+    const logPrefix = `${this.constructor.name}${JSON.stringify(
+      this
+    )}.delete()`;
     logger.verbose(logPrefix + `: Deleting "${this.username}".`);
 
     const queryConfig = {

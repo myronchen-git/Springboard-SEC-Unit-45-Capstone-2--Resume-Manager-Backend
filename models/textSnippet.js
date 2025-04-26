@@ -230,7 +230,9 @@ class TextSnippet {
    *  snippet.
    */
   async update(props) {
-    const logPrefix = `${this.name}.update(${JSON.stringify(props)})`;
+    const logPrefix = `${this.constructor.name}${JSON.stringify(
+      this
+    )}.update(${JSON.stringify(props)})`;
     logger.verbose(logPrefix);
 
     // Make a new entry so that the old version is kept.
@@ -273,7 +275,9 @@ class TextSnippet {
    * longer exists.
    */
   async delete() {
-    const logPrefix = `${this.name}.delete()`;
+    const logPrefix = `${this.constructor.name}${JSON.stringify(
+      this
+    )}.delete()`;
     logger.verbose(logPrefix);
 
     const queryConfig = {
