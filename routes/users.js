@@ -8,9 +8,10 @@ const userUpdateSchema = require('../schemas/userUpdate.json');
 const ContactInfo = require('../models/contactInfo');
 const { ensureLoggedIn } = require('../middleware/auth');
 const { runJsonSchemaValidator } = require('../util/validators');
-const { updateUser } = require('../services/userService');
-
-const { BadRequestError, NotFoundError } = require('../errors/appErrors');
+const {
+  updateUser,
+  createUpdateContactInfo,
+} = require('../services/userService');
 
 const logger = require('../util/logger');
 
@@ -75,8 +76,6 @@ router.patch('/:username', ensureLoggedIn, async (req, res, next) => {
  *  user.
  * @param {String} [github] - GitHub URL address for the user's GitHub profile.
  * @returns {Object} contactInfo - Returns all contact information of the user.
- * @throws {BadRequestError} If creating a new contact info entry without a full
- *  name.
  */
 router.put(
   '/:username/contact-info',
@@ -91,45 +90,14 @@ router.put(
     logger.info(logPrefix + ' BEGIN');
 
     try {
-      // Using JSON schema validator.
       runJsonSchemaValidator(contactInfoSchema, req.body, logPrefix);
 
-      try {
-        // Retrieve contact info if it exists.
-        const contactInfo = await ContactInfo.get({
-          username: userPayload.username,
-        });
+      const [statusCode, contactInfo] = await createUpdateContactInfo(
+        userPayload.username,
+        req.body
+      );
 
-        // Update existing contact info.
-        await contactInfo.update(req.body);
-
-        return res.json({ contactInfo });
-      } catch (err) {
-        // If contact info does not exist.
-        if (err instanceof NotFoundError) {
-          // Require full name if creating a new contact info entry in the
-          // database.
-          if (!req.body.fullName) {
-            logger.error(
-              `${logPrefix}: Missing full name for new contact info entry ` +
-                `for user "${userPayload.username}".`
-            );
-            throw new BadRequestError(
-              'Full name is required when saving contact info for the first time.'
-            );
-          }
-
-          // Create a new contact info entry.
-          const contactInfo = await ContactInfo.add({
-            username: userPayload.username,
-            ...req.body,
-          });
-
-          return res.status(201).json({ contactInfo });
-        } else {
-          throw err;
-        }
-      }
+      return res.status(statusCode).json({ contactInfo });
     } catch (err) {
       return next(err);
     }

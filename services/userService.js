@@ -5,7 +5,10 @@ const fileName = path.basename(__filename, '.js');
 
 const Document = require('../models/document');
 const User = require('../models/user');
+const ContactInfo = require('../models/contactInfo');
 const { createJWT } = require('../util/tokens');
+
+const { BadRequestError, NotFoundError } = require('../errors/appErrors');
 
 const logger = require('../util/logger');
 
@@ -72,6 +75,57 @@ async function updateUser(username, props) {
   return await User.update(username, dataToUpdate);
 }
 
+/**
+ * Holds the logic for creating a new contact info entry or updating an existing
+ * one.  The given information is checked for full name if creating a new
+ * contact info entry in the database.
+ *
+ * @param {String} username - Name of user that is creating a new or updating an
+ *  existing contact info.
+ * @param {Object} props - Contains the contact information.  See route for full
+ *  list.
+ * @returns {[Number, ContactInfo]} The status code to return in the API
+ *  response and a ContactInfo instance containing the updated information.
+ * @throws {BadRequestError} If creating a new contact info entry without a full
+ *  name.
+ */
+async function createUpdateContactInfo(username, props) {
+  const logPrefix =
+    `${fileName}.createUpdateContactInfo(` +
+    `username = ${username}, props = ${JSON.stringify(props)})`;
+  logger.verbose(logPrefix);
+
+  try {
+    // Retrieve contact info if it exists.
+    const contactInfo = await ContactInfo.get({ username });
+
+    // Update existing contact info.
+    await contactInfo.update(props);
+
+    return [200, contactInfo];
+  } catch (err) {
+    // If contact info does not exist.
+    if (err instanceof NotFoundError) {
+      // Require full name if creating a new contact info entry in the database.
+      if (!props.fullName) {
+        logger.error(
+          `${logPrefix}: Missing full name for new contact info entry.`
+        );
+        throw new BadRequestError(
+          'Full name is required when saving contact info for the first time.'
+        );
+      }
+
+      // Create a new contact info entry.
+      const contactInfo = await ContactInfo.add({ username, ...props });
+
+      return [201, contactInfo];
+    } else {
+      throw err;
+    }
+  }
+}
+
 // ==================================================
 
-module.exports = { createUser, updateUser };
+module.exports = { createUser, updateUser, createUpdateContactInfo };
