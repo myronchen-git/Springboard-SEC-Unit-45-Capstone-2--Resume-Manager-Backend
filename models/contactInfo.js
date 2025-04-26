@@ -140,22 +140,7 @@ class ContactInfo {
     const logPrefix = `ContactInfo.update(${JSON.stringify(props)})`;
     logger.verbose(logPrefix);
 
-    const allowedProps = [
-      'fullName',
-      'location',
-      'email',
-      'phone',
-      'linkedin',
-      'github',
-    ];
-    const filteredProps = Object.fromEntries(
-      Object.entries(props).filter((prop) => allowedProps.includes(prop[0]))
-    );
-
-    // If given no arguments, return.
-    if (!Object.keys(filteredProps).length) return this;
-
-    const [sqlSubstring, sqlValues] = convertPropsForSqlUpdate(filteredProps);
+    const [sqlSubstring, sqlValues] = convertPropsForSqlUpdate(props);
 
     // Comma at end of sqlSubstring will be removed.
     const queryConfig = {

@@ -143,26 +143,16 @@ class Section {
    * Updates a section with new properties.  If no properties are passed, then
    * the section is not updated.
    *
-   * @param {Object} sectionProps - Contains the updated properties.
-   * @param {String} [sectionProps.sectionName] - The new name of the section.
+   * @param {Object} props - Contains the updated properties.
+   * @param {String} [props.sectionName] - The new name of the section.
    * @returns {Section} The same Section instance that this method was called
    *  on, but with updated property values.
    */
-  async update(sectionProps) {
-    const logPrefix = `Section.update(${JSON.stringify(sectionProps)})`;
+  async update(props) {
+    const logPrefix = `Section.update(${JSON.stringify(props)})`;
     logger.verbose(logPrefix);
 
-    const allowedProps = ['sectionName'];
-    const filteredProps = Object.fromEntries(
-      Object.entries(sectionProps).filter((prop) =>
-        allowedProps.includes(prop[0])
-      )
-    );
-
-    // If given no arguments, return.
-    if (!Object.keys(filteredProps).length) return this;
-
-    const [sqlSubstring, sqlValues] = convertPropsForSqlUpdate(filteredProps);
+    const [sqlSubstring, sqlValues] = convertPropsForSqlUpdate(props);
 
     // Comma at end of sqlSubstring will be removed.
     const queryConfig = {

@@ -286,12 +286,7 @@ describe('Skill', () => {
     });
 
     test.each([
-      [0, Object.freeze({})], // empty
       [Object.keys(dataForUpdate).length, dataForUpdate], // all
-      [
-        Object.keys(dataForUpdate).length + 1,
-        Object.freeze({ ...dataForUpdate, isValidColumn: false }),
-      ], // extra
     ])('Updates a skill with %s properties.', async (amount, updatedData) => {
       // Arrange
       const expectedUpdatedSkill = {

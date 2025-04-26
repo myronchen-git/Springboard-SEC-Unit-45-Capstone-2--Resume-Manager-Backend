@@ -151,7 +151,6 @@ describe('ContactInfo', () => {
     });
 
     test.each([
-      [0, Object.freeze({})], // empty
       [
         1,
         Object.freeze(
@@ -159,10 +158,6 @@ describe('ContactInfo', () => {
         ),
       ], // one
       [Object.keys(dataForUpdate[0]).length, dataForUpdate[0]], // all
-      [
-        Object.keys(dataForUpdate[0]).length + 1,
-        Object.freeze({ ...dataForUpdate[0], isValidColumn: false }),
-      ], // extra
     ])(
       'Updates a a contact info with %s properties.',
       async (amount, updatedData) => {
