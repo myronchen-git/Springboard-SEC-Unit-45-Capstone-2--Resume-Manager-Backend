@@ -1,11 +1,11 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "http://example.com/schemas/user-update.json",
-  "type": "object",
+
   "title": "Update User",
   "description": "Required info when updating.",
-  "additionalProperties": false,
-  "anyOf": [{ "title": "new password", "required": ["newPassword"] }],
+
+  "type": "object",
   "properties": {
     "oldPassword": {
       "type": "string",
@@ -24,5 +24,8 @@
       "oldPassword": "123Ab!",
       "newPassword": "123Ab!"
     }
-  ]
+  ],
+  "additionalProperties": false,
+  "anyOf": [{ "title": "new password", "required": ["newPassword"] }],
+  "dependencies": { "newPassword": ["oldPassword"] }
 }
