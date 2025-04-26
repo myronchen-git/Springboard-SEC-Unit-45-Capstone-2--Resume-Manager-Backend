@@ -39,6 +39,39 @@ async function createUser(props) {
   return authToken;
 }
 
+/**
+ * For updating password, verifies the old password if a new password is
+ * supplied.  Makes a database call to store the new settings.
+ *
+ * @param {String} username - Name of user that wants to update his/her account
+ *  settings.
+ * @param {Object} props - Properties of the user account to be updated.  See
+ *  route for full list.
+ * @returns {User} A User instance that contains the updated info.
+ */
+async function updateUser(username, props) {
+  const logPrefix =
+    `${fileName}.updateUser(` +
+    `username = ${username}, props = ${JSON.stringify(props)})`;
+  logger.verbose(logPrefix);
+
+  // Setting up data for updating.
+  const dataToUpdate = { ...props };
+  delete dataToUpdate.oldPassword;
+
+  // For changing password.
+  if (props.newPassword) {
+    // Verify old password.
+    await User.signin({ username, password: props.oldPassword });
+
+    // Setting up data for updating password.
+    delete dataToUpdate.newPassword;
+    dataToUpdate.password = props.newPassword;
+  }
+
+  return await User.update(username, dataToUpdate);
+}
+
 // ==================================================
 
-module.exports = { createUser };
+module.exports = { createUser, updateUser };

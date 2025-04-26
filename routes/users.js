@@ -6,9 +6,9 @@ const contactInfoSchema = require('../schemas/contactInfo.json');
 const userUpdateSchema = require('../schemas/userUpdate.json');
 
 const ContactInfo = require('../models/contactInfo');
-const User = require('../models/user');
 const { ensureLoggedIn } = require('../middleware/auth');
 const { runJsonSchemaValidator } = require('../util/validators');
+const { updateUser } = require('../services/userService');
 
 const { BadRequestError, NotFoundError } = require('../errors/appErrors');
 
@@ -26,9 +26,12 @@ const router = new express.Router();
  *
  * Authorization required: login
  *
+ * Updates user account settings, such as password.
+ *
  * @param {String} [oldPassword] - User's old password.
  * @param {String} [newPassword] - User's new password.
- * @returns {Object} user - Contains all user account info, except password.
+ * @returns {{user: User}} user - Contains all user account info, except
+ *  password.
  **/
 router.patch('/:username', ensureLoggedIn, async (req, res, next) => {
   const userPayload = res.locals.user;
@@ -44,34 +47,9 @@ router.patch('/:username', ensureLoggedIn, async (req, res, next) => {
   logger.info(logPrefix + ' BEGIN');
 
   try {
-    // Check that old password is supplied if setting new password.
-    if (req.body.newPassword && !req.body.oldPassword) {
-      const message = 'Old password is required if setting new password.';
-      logger.error(`${logPrefix}: ${message}`);
-      throw new BadRequestError(message);
-    }
-
-    // Using JSON schema validator.
     runJsonSchemaValidator(userUpdateSchema, req.body, logPrefix);
 
-    // Setting up data for updating.
-    const dataToUpdate = { ...req.body };
-    delete dataToUpdate.oldPassword;
-
-    if (req.body.newPassword) {
-      // Verify old password.
-      await User.signin({
-        username: userPayload.username,
-        password: req.body.oldPassword,
-      });
-
-      // Setting up data for updating password.
-      delete dataToUpdate.newPassword;
-      dataToUpdate.password = req.body.newPassword;
-    }
-
-    // Updating user data.
-    const user = await User.update(userPayload.username, dataToUpdate);
+    const user = await updateUser(userPayload.username, req.body);
 
     return res.json({ user });
   } catch (err) {

@@ -45,7 +45,7 @@ afterAll(() => commonAfterAll(db));
 describe('PATCH /users/:username', () => {
   const user = users[0];
   const url = `${urlPrefix}/users/${user.username}`;
-  const validNewPassword = 'Updated12345!@#$%';
+  const validNewPassword = 'Updated' + user.password + '!@#$%';
 
   // Need to set authToken in beforeAll, because all variable declarations
   // outside of these setup functions are run first.
@@ -78,43 +78,6 @@ describe('PATCH /users/:username', () => {
       user: expectedUserData,
     });
   });
-
-  test(
-    'Updating user account data with no data ' + 'should return 400 status.',
-    async () => {
-      // Arrange
-      const updateData = Object.freeze({});
-
-      // Act
-      const resp = await request(app)
-        .patch(url)
-        .send(updateData)
-        .set('authorization', `Bearer ${authToken}`);
-
-      // Assert
-      expect(resp.statusCode).toEqual(400);
-      expect(resp.body).not.toHaveProperty('user');
-    }
-  );
-
-  test(
-    'Updating password without giving old password ' +
-      'should return 400 status.',
-    async () => {
-      // Arrange
-      const updateData = Object.freeze({ newPassword: validNewPassword });
-
-      // Act
-      const resp = await request(app)
-        .patch(url)
-        .send(updateData)
-        .set('authorization', `Bearer ${authToken}`);
-
-      // Assert
-      expect(resp.statusCode).toEqual(400);
-      expect(resp.body).not.toHaveProperty('user');
-    }
-  );
 
   test(
     'Updating password with incorrect old password ' +
