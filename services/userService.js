@@ -9,6 +9,7 @@ const ContactInfo = require('../models/contactInfo');
 const { createJWT } = require('../util/tokens');
 
 const { BadRequestError, NotFoundError } = require('../errors/appErrors');
+const { SigninError } = require('../errors/userErrors');
 
 const logger = require('../util/logger');
 
@@ -64,8 +65,13 @@ async function updateUser(username, props) {
 
   // For changing password.
   if (props.newPassword) {
-    // Verify old password.
-    await User.signin({ username, password: props.oldPassword });
+    try {
+      // Verify old password.
+      await User.signin({ username, password: props.oldPassword });
+    } catch (err) {
+      if (err instanceof SigninError) err.message = 'Invalid old password.';
+      throw err;
+    }
 
     // Setting up data for updating password.
     delete dataToUpdate.newPassword;

@@ -5,6 +5,7 @@ const ContactInfo = require('../models/contactInfo');
 const { updateUser, createUpdateContactInfo } = require('./userService');
 
 const { BadRequestError, NotFoundError } = require('../errors/appErrors');
+const { SigninError } = require('../errors/userErrors');
 
 const { users, contactInfos } = require('../_testData');
 
@@ -74,6 +75,60 @@ describe('updateUser', () => {
 
     expect(User.update).toHaveBeenCalledWith(username, {});
   });
+
+  test('Replaces error message if old password is invalid.', async () => {
+    // Arrange
+    const username = userData.username;
+    const oldPassword = 'incorrect password';
+    const newPassword = 'new' + userData.password;
+    const props = { oldPassword, newPassword };
+
+    User.signin.mockRejectedValue(new SigninError());
+
+    // Act
+    async function runFunc() {
+      await updateUser(username, props);
+    }
+
+    // Assert
+    await expect(runFunc).rejects.toThrow('Invalid old password.');
+
+    expect(User.signin).toHaveBeenCalledWith({
+      username,
+      password: oldPassword,
+    });
+
+    expect(User.update).not.toHaveBeenCalled();
+  });
+
+  test(
+    'Does not replace error message if User.signin throws an Error ' +
+      'other than SigninError.',
+    async () => {
+      // Arrange
+      const username = userData.username;
+      const oldPassword = userData.password;
+      const newPassword = 'new' + userData.password;
+      const props = { oldPassword, newPassword };
+
+      User.signin.mockRejectedValue(new Error('other type of error'));
+
+      // Act
+      async function runFunc() {
+        await updateUser(username, props);
+      }
+
+      // Assert
+      await expect(runFunc).rejects.toThrow('other type of error');
+
+      expect(User.signin).toHaveBeenCalledWith({
+        username,
+        password: oldPassword,
+      });
+
+      expect(User.update).not.toHaveBeenCalled();
+    }
+  );
 });
 
 // --------------------------------------------------

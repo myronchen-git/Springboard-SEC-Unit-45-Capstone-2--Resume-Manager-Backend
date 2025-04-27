@@ -80,6 +80,7 @@ class User {
    * @param {String} data.username - Name of the account.
    * @param {String} data.password - Password of the account.
    * @returns {User} A new User instance that contains the user's data.
+   * @throws {SigninError} If user does not exist or password is incorrect.
    */
   static async signin({ username, password }) {
     const logPrefix =
