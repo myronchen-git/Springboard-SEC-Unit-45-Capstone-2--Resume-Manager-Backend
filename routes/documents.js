@@ -29,6 +29,8 @@ const router = new express.Router();
  *
  * Authorization required: login
  *
+ * Creates a new document.
+ *
  * @param {String} documentName - Name of the document.
  * @param {Boolean} isTemplate - Whether this new document should be a template.
  * @returns {Object} document - Returns all info of the document.
@@ -49,6 +51,7 @@ router.post('/', ensureLoggedIn, async (req, res, next) => {
       ...req.body,
       owner: userPayload.username,
       isMaster: false,
+      isTemplate: false, // Temporary until templates are implemented.
     });
 
     return res.status(201).json({ document });
