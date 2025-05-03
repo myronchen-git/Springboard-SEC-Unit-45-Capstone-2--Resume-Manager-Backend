@@ -281,7 +281,7 @@ class Document {
       text: `
   UPDATE ${Document.tableName}
   SET ${sqlSubstring}
-    last_updated = (NOW() at time zone 'utc')
+    last_updated = NOW()
   WHERE id = $${sqlValues.length + 1}
   RETURNING ${Document._allDbColsAsJs};`,
       values: [...sqlValues, id],
