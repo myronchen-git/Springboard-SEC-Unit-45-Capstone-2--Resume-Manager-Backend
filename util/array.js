@@ -4,7 +4,9 @@
 
 /**
  * Shuffles/randomizes an array.
+ *
  * See https://stackoverflow.com/a/2450976.
+ *
  * See https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle.
  *
  * @param {Array} array - Array to be shuffled in place.
