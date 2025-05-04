@@ -35,8 +35,8 @@ class Document_X_Section extends Relationship {
    * @param {String} props.sectionId - ID of the section.
    * @param {Number} props.position - Position of section among other sections
    *  in the document.
-   * @returns {Document_X_Section} A new Document_X_Section instance that
-   *  contains the document_x_section's data.
+   * @returns {Promise<Document_X_Section>} A new Document_X_Section instance
+   *  that contains the document_x_section's data.
    */
   static async add(props) {
     // Allowed properties/attributes.
@@ -67,8 +67,8 @@ class Document_X_Section extends Relationship {
    *
    * @param {Number} documentId - ID of the document to get the
    *  documents_x_sections for.
-   * @returns {Document_X_Section[]} A list of Document_X_Section instances,
-   *  ordered by position.
+   * @returns {Promise<Document_X_Section[]>} A list of Document_X_Section
+   *  instances, ordered by position.
    */
   static async getAll(documentId) {
     const queryConfig = {
@@ -92,8 +92,8 @@ class Document_X_Section extends Relationship {
    *  document_x_section.
    * @param {Number} [queryParams.sectionId] - Section ID of the
    *  document_x_section.
-   * @returns {Document_X_Section} A new Document_X_Section instance that
-   *  contains the document_x_section's data.
+   * @returns {Promise<Document_X_Section>} A new Document_X_Section instance
+   *  that contains the document_x_section's data.
    */
   static async get(queryParams) {
     // Allowed parameters.
@@ -121,7 +121,8 @@ class Document_X_Section extends Relationship {
    *  reordered.
    * @param {Number[]} sectionIds - List of sections IDs with the desired
    *  ordering.
-   * @returns {Document_X_Section[]} A list of Document_X_Section instances.
+   * @returns {Promise<Document_X_Section[]>} A list of Document_X_Section
+   *  instances.
    */
   static async updateAllPositions(documentId, sectionIds) {
     let name = 'documentId';
@@ -146,8 +147,8 @@ class Document_X_Section extends Relationship {
    * if position is invalid.
    *
    * @param {Number} position - New position for this document_x_section.
-   * @returns {Document_X_Section} The same Document_X_Section instance that
-   *  this method was called on, but with updated property values.
+   * @returns {Promise<Document_X_Section>} The same Document_X_Section instance
+   *  that this method was called on, but with updated property values.
    */
   async update(position) {
     const queryConfig = {

@@ -28,8 +28,8 @@ class Document_X_Skill extends Relationship {
    * @param {Object} props - Contains data for creating a new document_x_skill.
    * @param {String} props.documentId - ID of the document.
    * @param {String} props.skillId - ID of the skill.
-   * @returns {Document_X_Skill} A new Document_X_Skill instance that contains
-   *  the document_x_skill's data.
+   * @returns {Promise<Document_X_Skill>} A new Document_X_Skill instance that
+   *  contains the document_x_skill's data.
    */
   static async add(props) {
     // Allowed properties/attributes.
@@ -59,7 +59,8 @@ class Document_X_Skill extends Relationship {
    *
    * @param {Number} documentId - ID of the document to get the
    *  documents_x_skills for.
-   * @returns {Document_X_Skill[]} A list of Document_X_Skill instances.
+   * @returns {Promise<Document_X_Skill[]>} A list of Document_X_Skill
+   *  instances.
    */
   static async getAll(documentId) {
     const queryConfig = {
@@ -82,7 +83,7 @@ class Document_X_Skill extends Relationship {
    *  document_x_skill.
    * @param {Number} queryParams.skillId - Skill ID of the
    *  document_x_skill.
-   * @returns {Document_X_Skill} A new Document_X_Skill instance that
+   * @returns {Promise<Document_X_Skill>} A new Document_X_Skill instance that
    *  contains the document_x_skill's data.
    */
   static async get(queryParams) {

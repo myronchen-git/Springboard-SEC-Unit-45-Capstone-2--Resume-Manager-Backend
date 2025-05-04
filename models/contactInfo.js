@@ -51,8 +51,8 @@ class ContactInfo {
    *  the user.
    * @param {String} [props.github] - GitHub URL address for the user's GitHub
    *  profile.
-   * @returns {ContactInfo} A new ContactInfo instance that contains the user's
-   *  contact information.
+   * @returns {Promise<ContactInfo>} A new ContactInfo instance that contains
+   *  the user's contact information.
    */
   static async add(props) {
     const logPrefix = `${this.name}.add(${JSON.stringify(props)})`;
@@ -89,8 +89,8 @@ class ContactInfo {
    *  specific contact info.
    * @param {String} queryParams.username - Username of the user to get contact
    *  info about.
-   * @returns {ContactInfo} A new ContactInfo instance that contains the user's
-   *  contact information.
+   * @returns {Promise<ContactInfo>} A new ContactInfo instance that contains
+   *  the user's contact information.
    */
   static async get(queryParams) {
     const logPrefix = `${this.name}.get(${JSON.stringify(queryParams)})`;
@@ -133,8 +133,8 @@ class ContactInfo {
    *  of the user.
    * @param {String} [props.github] - New GitHub URL address for the user's
    *  GitHub profile.
-   * @returns {ContactInfo} The same ContactInfo instance that this method was
-   *  called on, but with updated property values.
+   * @returns {Promise<ContactInfo>} The same ContactInfo instance that this
+   *  method was called on, but with updated property values.
    */
   async update(props) {
     const logPrefix = `${this.constructor.name}${JSON.stringify(

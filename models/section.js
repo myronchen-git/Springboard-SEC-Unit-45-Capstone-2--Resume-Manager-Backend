@@ -33,8 +33,8 @@ class Section {
    *
    * @param {Object} sectionProps - Contains data for creating a new section.
    * @param {String} sectionProps.sectionName - Name of the section.
-   * @returns {Section} A new Section instance that contains the section's
-   *  data.
+   * @returns {Promise<Section>} A new Section instance that contains the
+   *  section's data.
    */
   static async add(sectionProps) {
     const logPrefix = `${this.name}.add(${JSON.stringify(sectionProps)})`;
@@ -59,7 +59,7 @@ class Section {
   /**
    * Retrieves all the sections.
    *
-   * @returns {Section[]} A list of Section instances.
+   * @returns {Promise<Section[]>} A list of Section instances.
    */
   static async getAll() {
     const logPrefix = `${this.name}.getAll()`;
@@ -81,7 +81,7 @@ class Section {
    * related to their positions.
    *
    * @param {Number} documentId - ID of the document to get sections from.
-   * @returns {Section[]} A list of Section instances.
+   * @returns {Promise<Section[]>} A list of Section instances.
    */
   static async getAllInDocument(documentId) {
     const logPrefix = `${this.name}.getAllInDocument(documentId = ${documentId})`;
@@ -110,8 +110,8 @@ class Section {
    *  specific section.
    * @param {Number} [queryParams.id] - ID of the section.
    * @param {String} [queryParams.sectionName] - Name of the section.
-   * @returns {Section} A new Section instance that contains the section's
-   *  data.
+   * @returns {Promise<Section>} A new Section instance that contains the
+   *  section's data.
    */
   static async get(queryParams) {
     const logPrefix = `${this.name}.get(${JSON.stringify(queryParams)})`;
@@ -145,8 +145,8 @@ class Section {
    *
    * @param {Object} props - Contains the updated properties.
    * @param {String} [props.sectionName] - The new name of the section.
-   * @returns {Section} The same Section instance that this method was called
-   *  on, but with updated property values.
+   * @returns {Promise<Section>} The same Section instance that this method was
+   *  called on, but with updated property values.
    */
   async update(props) {
     const logPrefix = `${this.constructor.name}${JSON.stringify(

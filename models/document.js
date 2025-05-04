@@ -57,8 +57,8 @@ class Document {
    * @param {Boolean} docProps.isMaster - If the document is the master
    *  resume.
    * @param {Boolean} docProps.isTemplate - If the document is a template.
-   * @returns {Document} A new Document instance that contains the document's
-   *  data.
+   * @returns {Promise<Document>} A new Document instance that contains the
+   *  document's data.
    */
   static async add(docProps) {
     const logPrefix = `${this.name}.add(${JSON.stringify(docProps)})`;
@@ -88,7 +88,7 @@ class Document {
    * Retrieves all the documents belonging to a user.
    *
    * @param {String} owner - Username to get the documents for.
-   * @returns {Document[]} A list of Document instances.
+   * @returns {Promise<Document[]>} A list of Document instances.
    */
   static async getAll(owner) {
     const logPrefix = `${this.name}.getAll(${owner})`;
@@ -114,8 +114,8 @@ class Document {
    *  specific document.
    * @param {Number} [queryParams.id] - ID of the document.
    * @param {String} [queryParams.documentName] - Name of the document.
-   * @returns {Document} A new Document instance that contains the document's
-   *  data.
+   * @returns {Promise<Document>} A new Document instance that contains the
+   *  document's data.
    */
   static async get(queryParams) {
     const logPrefix = `${this.name}.get(${JSON.stringify(queryParams)})`;
@@ -150,7 +150,7 @@ class Document {
    * sections, educations, experiences, etc..  Assumes that the document exists.
    *
    * @param {Number} documentId - ID of the document to get all the data from.
-   * @returns {Object} All needed data to display a resume or template.
+   * @returns {Promise<Object>} All needed data to display a resume or template.
    */
   static async getDocumentAndSectionContent(documentId) {
     const logPrefix =
@@ -263,8 +263,8 @@ class Document {
    *  document is locked.
    * @param {String} [oldDocumentName] - The document name before the update,
    *  used only for better error messages.
-   * @returns {Document} A new Document instance that contains the updated
-   *  document info.
+   * @returns {Promise<Document>} A new Document instance that contains the
+   *  updated document info.
    * @throws {NotFoundError} If the document does not exist.
    */
   static async update(id, docProps, oldDocumentName) {
@@ -306,8 +306,8 @@ class Document {
    * Updates a document with new properties.
    *
    * @param {Object} docProps - Contains the updated properties.
-   * @returns {Document} The same Document instance that this method was called
-   *  on, but with updated property values.
+   * @returns {Promise<Document>} The same Document instance that this method
+   *  was called on, but with updated property values.
    * @throws {AppServerError} If the document that this instance represents has
    *  already been deleted.
    */

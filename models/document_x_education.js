@@ -35,8 +35,8 @@ class Document_X_Education extends Relationship {
    * @param {Number} props.educationId - ID of the education.
    * @param {Number} props.position - Position of education among other
    *  educations in the document.
-   * @returns {Document_X_Education} A new Document_X_Education instance that
-   *  contains the document_x_education's data.
+   * @returns {Promise<Document_X_Education>} A new Document_X_Education
+   *  instance that contains the document_x_education's data.
    */
   static async add(props) {
     // Allowed properties/attributes.
@@ -67,7 +67,8 @@ class Document_X_Education extends Relationship {
    *
    * @param {Number} documentId - ID of the document to get the
    *  documents_x_educations for.
-   * @returns {Document_X_Education[]} A list of Document_X_Education instances.
+   * @returns {Promise<Document_X_Education[]>} A list of Document_X_Education
+   *  instances.
    */
   static async getAll(documentId) {
     const queryConfig = {
@@ -91,8 +92,8 @@ class Document_X_Education extends Relationship {
    *  document_x_education.
    * @param {Number} queryParams.educationId - Education ID of the
    *  document_x_education.
-   * @returns {Document_X_Education} A new Document_X_Education instance that
-   *  contains the document_x_education's data.
+   * @returns {Promise<Document_X_Education>} A new Document_X_Education
+   *  instance that contains the document_x_education's data.
    */
   static async get(queryParams) {
     // Allowed parameters.
@@ -118,8 +119,8 @@ class Document_X_Education extends Relationship {
    * BadRequestError if position is invalid.
    *
    * @param {Number} position - New position for this document_x_education.
-   * @returns {Document_X_Education} The same Document_X_Education instance that
-   *  this method was called on, but with updated property values.
+   * @returns {Promise<Document_X_Education>} The same Document_X_Education
+   *  instance that this method was called on, but with updated property values.
    */
   async update(position) {
     const queryConfig = {
@@ -159,7 +160,8 @@ class Document_X_Education extends Relationship {
    *  educations reordered.
    * @param {Number[]} educationIds - List of educations IDs with the desired
    *  ordering.
-   * @returns {Document_X_Education[]} A list of Document_X_Education instances.
+   * @returns {Promise<Document_X_Education[]>} A list of Document_X_Education
+   *  instances.
    */
   static async updateAllPositions(documentId, educationIds) {
     let name = 'documentId';

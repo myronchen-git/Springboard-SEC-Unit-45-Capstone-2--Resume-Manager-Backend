@@ -66,7 +66,7 @@ class Experience {
    * @param {String} props.startDate - The start date of joining the
    *  organization.
    * @param {String} [props.endDate] - The end date of leaving the organization.
-   * @returns {Experience} A new Experience instance that contains the
+   * @returns {Promise<Experience>} A new Experience instance that contains the
    *  experience's data.
    */
   static async add(props) {
@@ -105,7 +105,7 @@ class Experience {
    * Retrieves all the experiences belonging to a user.
    *
    * @param {String} owner - Username to get the experiences for.
-   * @returns {Experience[]} A list of Experience instances.
+   * @returns {Promise<Experience[]>} A list of Experience instances.
    */
   static async getAll(owner) {
     const logPrefix = `${this.name}.getAll(${owner})`;
@@ -136,7 +136,7 @@ class Experience {
    * order is related to their positions.
    *
    * @param {Number} documentId - ID of the document to get experiences from.
-   * @returns {Experience[]} A list of Experience instances.
+   * @returns {Promise<Experience[]>} A list of Experience instances.
    */
   static async getAllInDocument(documentId) {
     const logPrefix =
@@ -165,7 +165,7 @@ class Experience {
    * @param {Object} queryParams - Contains the query parameters for finding a
    *  specific experience.
    * @param {Number} queryParams.id - ID of the experience.
-   * @returns {Experience} A new Experience instance that contains the
+   * @returns {Promise<Experience>} A new Experience instance that contains the
    *  experience's data.
    */
   static async get(queryParams) {
@@ -210,8 +210,8 @@ class Experience {
    * @param {String} [props.startDate] - New start date of joining the
    *  organization.
    * @param {String} [props.endDate] - New end date of leaving the organization.
-   * @returns {Experience} The same Experience instance that this method was
-   *  called on, but with updated property values.
+   * @returns {Promise<Experience>} The same Experience instance that this
+   *  method was called on, but with updated property values.
    */
   async update(props) {
     const logPrefix = `${this.constructor.name}${JSON.stringify(

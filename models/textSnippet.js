@@ -61,8 +61,8 @@ class TextSnippet {
    * @param {String} props.type - The type of content, such as bullet point
    *  or description.
    * @param {String} props.content - Content of the text snippet.
-   * @returns {TextSnippet} A new TextSnippet instance that contains the
-   *  text snippet's data.
+   * @returns {Promise<TextSnippet>} A new TextSnippet instance that contains
+   *  the text snippet's data.
    */
   static async add(props) {
     const logPrefix = `${this.name}.add(${JSON.stringify(props)})`;
@@ -88,7 +88,7 @@ class TextSnippet {
    * Retrieves all the text snippets belonging to a user.
    *
    * @param {String} owner - Username to get the text snippets for.
-   * @returns {TextSnippet[]} A list of TextSnippet instances.
+   * @returns {Promise<TextSnippet[]>} A list of TextSnippet instances.
    */
   static async getAll(owner) {
     const logPrefix = `${this.name}.getAll(${owner})`;
@@ -113,7 +113,7 @@ class TextSnippet {
    * @param {String} owner - Name of the user to get text snippets for.
    * @param {Number} experienceId - ID of the experience to get text snippets
    *  for.
-   * @returns {TextSnippet[]} A list of text snippets belonging to an
+   * @returns {Promise<TextSnippet[]>} A list of text snippets belonging to an
    *  experience.
    */
   static async getAllForExperience(owner, experienceId) {
@@ -149,7 +149,7 @@ class TextSnippet {
    *  to.
    * @param {Number} experienceId - ID of the experience to get text snippets
    *  for.
-   * @returns {TextSnippet[]} A list of text snippets belonging to an
+   * @returns {Promise<TextSnippet[]>} A list of text snippets belonging to an
    *  experience, ordered by position.
    */
   static async getAllForExperienceInDocument(owner, documentId, experienceId) {
@@ -186,8 +186,8 @@ class TextSnippet {
    *  specific text snippet.
    * @param {Number} queryParams.id - ID of the text snippet.
    * @param {Date} queryParams.version - Timestamp of the text snippet.
-   * @returns {TextSnippet} A new TextSnippet instance that contains the text
-   *  snippet's data.
+   * @returns {Promise<TextSnippet>} A new TextSnippet instance that contains
+   *  the text snippet's data.
    */
   static async get(queryParams) {
     const logPrefix = `${this.name}.get(${JSON.stringify(queryParams)})`;
@@ -225,9 +225,9 @@ class TextSnippet {
    * @param {String} [props.type] - New type of content.
    * @param {String} [props.content] - New content of the text snippet.
    * @throws {AppServerError} If the old text snippet did not exist.
-   * @returns {TextSnippet} A new TextSnippet instance, which has a different
-   *  version from the original snippet, and the parent referencing the original
-   *  snippet.
+   * @returns {Promise<TextSnippet>} A new TextSnippet instance, which has a
+   *  different version from the original snippet, and the parent referencing
+   *  the original snippet.
    */
   async update(props) {
     const logPrefix = `${this.constructor.name}${JSON.stringify(

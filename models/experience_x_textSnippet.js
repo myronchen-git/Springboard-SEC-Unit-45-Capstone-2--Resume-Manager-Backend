@@ -48,8 +48,9 @@ class Experience_X_Text_Snippet extends Relationship {
    * @param {Date} props.textSnippetVersion - Version of the text snippet.
    * @param {Number} props.position - Position of text snippet among other text
    *  snippets in the experience in the document.
-   * @returns {Experience_X_Text_Snippet} A new Experience_X_Text_Snippet
-   *  instance that contains the experience_x_text_snippet's data.
+   * @returns {Promise<Experience_X_Text_Snippet>} A new
+   *  Experience_X_Text_Snippet instance that contains the
+   *  experience_x_text_snippet's data.
    */
   static async add(props) {
     // Allowed properties/attributes.
@@ -92,8 +93,8 @@ class Experience_X_Text_Snippet extends Relationship {
    *
    * @param {Number} documentXExperienceId - ID of the document-experience
    *  relationship to get the experiences_x_text_snippets for.
-   * @returns {Experience_X_Text_Snippet[]} A list of Experience_X_Text_Snippet
-   *  instances.
+   * @returns {Promise<Experience_X_Text_Snippet[]>} A list of
+   *  Experience_X_Text_Snippet instances.
    */
   static async getAll(documentXExperienceId) {
     const queryConfig = {
@@ -145,8 +146,9 @@ class Experience_X_Text_Snippet extends Relationship {
    * BadRequestError if position is invalid.
    *
    * @param {Number} position - New position for this experience_x_text_snippet.
-   * @returns {Experience_X_Text_Snippet} The same Experience_X_Text_Snippet
-   *  instance that this method was called on, but with updated property values.
+   * @returns {Promise<Experience_X_Text_Snippet>} The same
+   *  Experience_X_Text_Snippet instance that this method was called on, but
+   *  with updated property values.
    */
   async update(position) {
     const queryConfig = {
@@ -188,8 +190,8 @@ class Experience_X_Text_Snippet extends Relationship {
    *  relationship that is having its text snippets reordered.
    * @param {Number[]} textSnippetIds - List of text snippets IDs with the
    *  desired ordering.
-   * @returns {Experience_X_Text_Snippet[]} A list of Experience_X_Text_Snippet
-   *  instances.
+   * @returns {Promise<Experience_X_Text_Snippet[]>} A list of
+   *  Experience_X_Text_Snippet instances.
    */
   static async updateAllPositions(documentXExperienceId, textSnippetIds) {
     let name = 'documentXExperienceId';
@@ -220,7 +222,7 @@ class Experience_X_Text_Snippet extends Relationship {
    *  to be replaced.
    * @param {Date | String} newTextSnippetVersion - Newer version of the text
    *  snippet that is replacing.
-   * @returns {Number} Number of text snippets updated.
+   * @returns {Promise<Number>} Number of text snippets updated.
    */
   static async replaceTextSnippet(
     textSnippetId,

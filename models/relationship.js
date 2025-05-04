@@ -29,8 +29,8 @@ class Relationship {
    *  query.
    * @param {String} notFoundMessage - Error message to use in the
    *  NotFoundError.
-   * @returns {Object} An instance of the subclass, containing the new entry's
-   *  data.
+   * @returns {Promise<Object>} An instance of the subclass, containing the new
+   *  entry's data.
    */
   static async add(props, queryConfig, notFoundMessage) {
     const logPrefix = `${this.name}.add(${JSON.stringify(props)})`;
@@ -62,7 +62,8 @@ class Relationship {
    *  parameterized query.
    * @param {Array} queryConfig.values - The values to use in the parameterized
    *  query.
-   * @returns {Array} A list of instances of the relationship data model.
+   * @returns {Promise<Array>} A list of instances of the relationship data
+   *  model.
    */
   static async getAll(documentId, queryConfig) {
     const logPrefix = `${this.name}.getAll(${documentId})`;
@@ -85,8 +86,8 @@ class Relationship {
    *  query.
    * @param {String} notFoundMessage - Error message to use in the
    *  NotFoundError when not found.
-   * @returns {Object} An instance of the subclass, containing the new entry's
-   *  data.
+   * @returns {Promise<Object>} An instance of the subclass, containing the new
+   *  entry's data.
    */
   static async get(queryParams, queryConfig, notFoundMessage) {
     const logPrefix = `${this.name}.get(${JSON.stringify(queryParams)})`;
@@ -123,7 +124,8 @@ class Relationship {
    *  content, which will be used in the SQL UPDATE WHERE clause.
    * @param {Number[]} attachWiths.ids - The IDs of the content to be
    *  repositioned, in their desired order.
-   * @returns {Array} A list of instances of the relationship data model.
+   * @returns {Promise<Array>} A list of instances of the relationship data
+   *  model.
    */
   static async updateAllPositions(attachTo, attachWiths) {
     const logPrefix =
@@ -225,8 +227,8 @@ class Relationship {
    *  the database.
    * @param {String} serverErrorMessage - Error message to use in
    *  AppServerError, if the table entry is not in the database.
-   * @returns {Object} The same instance that this method was called on, but
-   *  with updated property values.
+   * @returns {Promise<Object>} The same instance that this method was called
+   *  on, but with updated property values.
    */
   async update(
     position,

@@ -42,7 +42,8 @@ class Skill {
    *  skill will use.
    * @param {Date} props.textSnippetVersion - Version of the text snippet that
    *  this skill will use.
-   * @returns {Skill} A new Skill instance that contains the skill's data.
+   * @returns {Promise<Skill>} A new Skill instance that contains the skill's
+   *  data.
    */
   static async add(props) {
     const logPrefix = `${this.name}.add(${JSON.stringify(props)})`;
@@ -87,7 +88,7 @@ class Skill {
    * Retrieves all the skills belonging to a user.
    *
    * @param {String} owner - Username to get the skills for.
-   * @returns {Skill[]} A list of Skill instances.
+   * @returns {Promise<Skill[]>} A list of Skill instances.
    */
   static async getAll(owner) {
     const logPrefix = `${this.name}.getAll(${owner})`;
@@ -113,7 +114,8 @@ class Skill {
    *  specific skill.
    * @param {Number} [queryParams.id] - ID of the skill.
    * @param {String} [queryParams.name] - Name of the skill.
-   * @returns {Skill} A new Skill instance that contains the skill's data.
+   * @returns {Promise<Skill>} A new Skill instance that contains the skill's
+   *  data.
    */
   static async get(queryParams) {
     const logPrefix = `${this.name}.get(${JSON.stringify(queryParams)})`;
@@ -149,7 +151,7 @@ class Skill {
    *
    * @param {Object} props - Contains the updated properties.
    * @param {String} [props.name] - New name for this bunch of text for skill.
-   * @returns {Skill} The same Skill instance that this method was
+   * @returns {Promise<Skill>} The same Skill instance that this method was
    *  called on, but with updated property values.
    */
   async update(props) {

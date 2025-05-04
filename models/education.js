@@ -72,8 +72,8 @@ class Education {
    *  school.
    * @param {String} [props.activities] - Any activities done in relation to the
    *  school.
-   * @returns {Education} A new Education instance that contains the education's
-   *  data.
+   * @returns {Promise<Education>} A new Education instance that contains the
+   *  education's data.
    */
   static async add(props) {
     const logPrefix = `${this.name}.add(${JSON.stringify(props)})`;
@@ -134,7 +134,7 @@ class Education {
    * Retrieves all the educations belonging to a user.
    *
    * @param {String} owner - Username to get the educations for.
-   * @returns {Education[]} A list of Education instances.
+   * @returns {Promise<Education[]>} A list of Education instances.
    */
   static async getAll(owner) {
     const logPrefix = `${this.name}.getAll(${owner})`;
@@ -165,7 +165,7 @@ class Education {
    * order is related to their positions.
    *
    * @param {Number} documentId - ID of the document to get educations from.
-   * @returns {Education[]} A list of Education instances.
+   * @returns {Promise<Education[]>} A list of Education instances.
    */
   static async getAllInDocument(documentId) {
     const logPrefix = `${this.name}.getAllInDocument(documentId = ${documentId})`;
@@ -193,8 +193,8 @@ class Education {
    * @param {Object} queryParams - Contains the query parameters for finding a
    *  specific education.
    * @param {Number} queryParams.id - ID of the education.
-   * @returns {Education} A new Education instance that contains the education's
-   *  data.
+   * @returns {Promise<Education>} A new Education instance that contains the
+   *  education's data.
    */
   static async get(queryParams) {
     const logPrefix = `${this.name}.get(${JSON.stringify(queryParams)})`;
@@ -241,8 +241,8 @@ class Education {
    *  attendance.
    * @param {String} [props.awardsAndHonors] - New awards or honors String.
    * @param {String} [props.activities] - New activities String.
-   * @returns {Education} The same Education instance that this method was
-   *  called on, but with updated property values.
+   * @returns {Promise<Education>} The same Education instance that this method
+   *  was called on, but with updated property values.
    */
   async update(props) {
     const logPrefix = `${this.constructor.name}${JSON.stringify(

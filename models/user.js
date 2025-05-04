@@ -38,7 +38,7 @@ class User {
    * @param {Object} data - Contains data for creating a new account.
    * @param {String} data.username - Name of the account.
    * @param {String} data.password - Password of the account.
-   * @returns {User} A new User instance that contains the user's data.
+   * @returns {Promise<User>} A new User instance that contains the user's data.
    */
   static async register({ username, password }) {
     const logPrefix =
@@ -79,7 +79,7 @@ class User {
    * @param {Object} data - Contains data for signing into an account.
    * @param {String} data.username - Name of the account.
    * @param {String} data.password - Password of the account.
-   * @returns {User} A new User instance that contains the user's data.
+   * @returns {Promise<User>} A new User instance that contains the user's data.
    * @throws {SigninError} If user does not exist or password is incorrect.
    */
   static async signin({ username, password }) {
@@ -117,7 +117,7 @@ class User {
    * @param {String} username - Username of the account to update.
    * @param {Object} data - Contains data for updating an account.
    * @param {String} data.password - New password for the account.
-   * @returns {User} A new User instance that contains the user's data.
+   * @returns {Promise<User>} A new User instance that contains the user's data.
    * @throws {NotFoundError} If user does not exist.
    */
   static async update(username, { password }) {
@@ -152,8 +152,8 @@ class User {
    * Updates a user entry in the database, using a User instance.
    *
    * @param {Object} data - Contains data for updating an account.
-   * @returns {User} The same User instance that this method was called on, but
-   *  with updated property values.
+   * @returns {Promise<User>} The same User instance that this method was called
+   *  on, but with updated property values.
    * @throws {AppServerError} If the user that this instance represents has
    *  already been deleted.
    */
