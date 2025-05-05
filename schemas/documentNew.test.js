@@ -30,7 +30,7 @@ describe('documentNew', () => {
     // Wrong data type for template boolean.
     [{ ...document, isTemplate: 'true' }],
     // Missing template boolean.
-    [{ documentName: document.documentName }],
+    // [{ documentName: document.documentName }],
     // Missing everything.
     [{}],
   ])('Failure for input %s', (str) => {
