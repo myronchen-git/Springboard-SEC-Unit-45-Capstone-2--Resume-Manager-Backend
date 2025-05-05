@@ -66,6 +66,8 @@ router.post('/', ensureLoggedIn, async (req, res, next) => {
  *
  * Authorization required: login
  *
+ * Gets all documents belonging to a user.
+ *
  * @returns {Object} documents - Returns a list of documents containing all info
  *  of each document.
  */
