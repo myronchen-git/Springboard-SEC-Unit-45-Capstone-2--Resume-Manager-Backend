@@ -37,14 +37,15 @@ const logger = require('../util/logger');
  *  with a text snippet.
  * @param {Object} props - Properties of the text snippet to add.
  * @throws {ForbiddenError} If the document is not the master resume.
- * @returns {{
+ * @returns {Promise<{
  *    textSnippet: TextSnippet,
  *    experienceXTextSnippet: Experience_X_Text_Snippet
- *  }}
+ *  }>}
  *  textSnippet - Text snippet ID, version, owner, parent, type, and content.
- *  experienceXTextSnippet - The document-experience ID that owns the text
- *  snippet, text snippet ID, version of the text snippet, and position of the
- *  text snippet among other text snippets in the experience and document.
+ *  experienceXTextSnippet - The experience-(text snippet) relationship that
+ *  contains the document-experience ID, text snippet ID, version of the text
+ *  snippet, and position of the text snippet among other text snippets in the
+ *  experience and document.
  */
 async function createTextSnippet(username, documentId, experienceId, props) {
   const logPrefix =
@@ -116,7 +117,8 @@ async function createTextSnippet(username, documentId, experienceId, props) {
  *
  * @param {String} username - Name of the user to get text snippets for.
  * @param {Number} experienceId - ID of the experience to get text snippets for.
- * @returns {TextSnippet[]} A list of text snippets belonging to an experience.
+ * @returns {Promise<TextSnippet[]>} A list of text snippets belonging to an
+ *  experience.
  */
 async function getTextSnippets(username, experienceId) {
   const logPrefix =
@@ -156,8 +158,8 @@ async function getTextSnippets(username, experienceId) {
  * @param {Number} textSnippetId - ID part of the text snippet to attach.
  * @param {String} textSnippetVersion - Version part of the text snippet to
  *  attach.
- * @returns {Experience_X_Text_Snippet} An Experience_X_Text_Snippet instance
- *  that contains the experience-text snippet relationship data.
+ * @returns {Promise<Experience_X_Text_Snippet>} An Experience_X_Text_Snippet
+ *  instance that contains the experience-text snippet relationship data.
  */
 async function createExperience_x_textSnippet(
   username,
@@ -221,7 +223,8 @@ async function createExperience_x_textSnippet(
  *  update.
  * @param {object} props - Properties of the text snippet to be updated.  See
  *  route for full list.
- * @returns {TextSnippet} A TextSnippet instance containing the updated info.
+ * @returns {Promise<TextSnippet>} A TextSnippet instance containing the updated
+ *  info.
  */
 async function updateTextSnippet(
   username,
@@ -270,8 +273,8 @@ async function updateTextSnippet(
  *  snippets reordered.
  * @param {Number[]} textSnippetIds - List of text snippet IDs with the desired
  *  ordering.
- * @returns {TextSnippet[]} A list of TextSnippet instances, in order of
- *  position within experience and document.
+ * @returns {Promise<TextSnippet[]>} A list of TextSnippet instances, in order
+ *  of position within experience and document.
  */
 async function updateExperienceXTextSnippetsPositions(
   username,
