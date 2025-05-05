@@ -6,13 +6,14 @@ const fileName = path.basename(__filename, '.js');
 const Document = require('../models/document');
 const Experience = require('../models/experience');
 const Document_X_Experience = require('../models/document_x_experience');
+const { createSectionItem } = require('./commonSectionsService');
 const {
   validateOwnership,
   getLastPosition,
   transformObjectEmptyStringValuesIntoNulls,
 } = require('../util/serviceHelpers');
 
-const { BadRequestError, ForbiddenError } = require('../errors/appErrors');
+const { BadRequestError } = require('../errors/appErrors');
 
 const logger = require('../util/logger');
 
@@ -33,10 +34,10 @@ const logger = require('../util/logger');
  * @param {Number} documentId - ID of the document that is being attached with
  *  an experience.
  * @param {Object} props - Properties of the experience to add.
- * @returns {{
+ * @returns {Promise<{
  *    experience: Experience,
  *    document_x_experience: Document_X_Experience
- *  }}
+ *  }>}
  *  An Object containing an Experience instance that contains the saved data
  *  and a Document_X_Experience instance that contains the document-experience
  *  relationship data.
@@ -49,41 +50,13 @@ async function createExperience(username, documentId, props) {
     `props = ${JSON.stringify(props)})`;
   logger.verbose(logPrefix);
 
-  // Verify document ownership and if document is master.
-  const document = await validateOwnership(
-    Document,
+  return await createSectionItem(
+    Experience,
+    Document_X_Experience,
     username,
-    { id: documentId },
-    logPrefix
-  );
-
-  if (!document.isMaster) {
-    logger.error(
-      `${logPrefix}: User attempted to add an experience ` +
-        'not to the master resume.'
-    );
-    throw new ForbiddenError(
-      'Experiences can only be added to the master resume.'
-    );
-  }
-
-  // Create experience.
-  const experience = await Experience.add({ ...props, owner: username });
-
-  // Find next position.
-  const documents_x_experiences = await Document_X_Experience.getAll(
-    documentId
-  );
-  const nextPosition = getLastPosition(documents_x_experiences) + 1;
-
-  // Create document-experience relationship.
-  const document_x_experience = await Document_X_Experience.add({
     documentId,
-    experienceId: experience.id,
-    position: nextPosition,
-  });
-
-  return { experience, document_x_experience };
+    props
+  );
 }
 
 /**

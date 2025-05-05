@@ -6,6 +6,7 @@ const fileName = path.basename(__filename, '.js');
 const Document = require('../models/document');
 const Education = require('../models/education');
 const Document_X_Education = require('../models/document_x_education');
+const { createSectionItem } = require('./commonSectionsService');
 const {
   validateOwnership,
   getLastPosition,
@@ -32,10 +33,10 @@ const logger = require('../util/logger');
  * @param {Number} documentId - ID of the document that is being attached with
  *  an education.
  * @param {Object} props - Properties of the education to add.
- * @returns {{
+ * @returns {Promise<{
  *    education: Education,
  *    document_x_education: Document_X_Education
- *  }}
+ *  }>}
  *  An Object containing an Education instance that contains the saved data
  *  and a Document_X_Education instance that contains the document-education
  *  relationship data.
@@ -48,38 +49,13 @@ async function createEducation(username, documentId, props) {
     `props = ${JSON.stringify(props)})`;
   logger.verbose(logPrefix);
 
-  // Verify document ownership and if document is master.
-  const document = await validateOwnership(
-    Document,
+  return await createSectionItem(
+    Education,
+    Document_X_Education,
     username,
-    { id: documentId },
-    logPrefix
-  );
-
-  if (!document.isMaster) {
-    logger.error(
-      `${logPrefix}: User attempted to add an education not to the master resume.`
-    );
-    throw new ForbiddenError(
-      'Educations can only be added to the master resume.'
-    );
-  }
-
-  // Create education.
-  const education = await Education.add({ ...props, owner: username });
-
-  // Find next position.
-  const documents_x_educations = await Document_X_Education.getAll(documentId);
-  const nextPosition = getLastPosition(documents_x_educations) + 1;
-
-  // Create document-education relationship.
-  const document_x_education = await Document_X_Education.add({
     documentId,
-    educationId: education.id,
-    position: nextPosition,
-  });
-
-  return { education, document_x_education };
+    props
+  );
 }
 
 /**
