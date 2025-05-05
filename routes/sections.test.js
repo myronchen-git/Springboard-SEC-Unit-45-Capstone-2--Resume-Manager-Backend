@@ -185,7 +185,7 @@ describe('POST /users/:username/documents/:docId/sections/:sectionId', () => {
       // Manually inserting relationships to simplify set up.  Otherwise, there
       // will be many calls to create, delete, and reposition document-section
       // relationships.
-      db.query({
+      await db.query({
         queryConfig: {
           text: `
   INSERT INTO documents_x_sections (document_id, section_id, position)
