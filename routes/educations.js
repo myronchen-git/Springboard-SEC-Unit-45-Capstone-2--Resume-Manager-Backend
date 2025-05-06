@@ -169,7 +169,7 @@ router.get('/:username/educations', ensureLoggedIn, async (req, res, next) => {
 });
 
 /**
- * PATCH /users/:username/documents/:documentId/educations/:educationId
+ * PATCH /users/:username/educations/:educationId
  * {
  *  school,
  *  location,
@@ -199,28 +199,24 @@ router.get('/:username/educations', ensureLoggedIn, async (req, res, next) => {
  *  dates.
  */
 router.patch(
-  '/:username/documents/:documentId/educations/:educationId',
+  '/:username/educations/:educationId',
   ensureLoggedIn,
   async (req, res, next) => {
     const userPayload = res.locals.user;
-    const { username, documentId, educationId } = req.params;
+    const { username, educationId } = req.params;
 
     const logPrefix =
-      `PATCH /users/${username}/documents/${documentId}/educations/${educationId} ` +
-      `(user: ${JSON.stringify(userPayload)})`;
+      `PATCH /users/${username}/educations/${educationId} ` +
+      `(user: ${JSON.stringify(userPayload)}, ` +
+      `request body: ${JSON.stringify(req.body)})`;
     logger.info(logPrefix + ' BEGIN');
 
     try {
-      runJsonSchemaValidator(
-        urlParamsSchema,
-        { documentId, educationId },
-        logPrefix
-      );
+      runJsonSchemaValidator(urlParamsSchema, { educationId }, logPrefix);
       runJsonSchemaValidator(educationUpdateSchema, req.body, logPrefix);
 
       const education = await updateEducation(
         userPayload.username,
-        documentId,
         educationId,
         req.body
       );

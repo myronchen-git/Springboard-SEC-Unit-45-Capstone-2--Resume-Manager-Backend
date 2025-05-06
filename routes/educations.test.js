@@ -517,9 +517,14 @@ describe('GET /users/:username/educations', () => {
 });
 
 // --------------------------------------------------
-// PATCH /users/:username/documents/:documentId/educations/:educationId
+// PATCH /users/:username/educations/:educationId
 
-describe('PATCH /users/:username/documents/:documentId/educations/:educationId', () => {
+describe('PATCH /users/:username/educations/:educationId', () => {
+  // Temporary URL generator until a better modular and more general URL
+  // generator is made.
+  const getEducationUrl = (username, educationId) =>
+    `/api/v1/users/${username}/educations/${educationId}`;
+
   let authToken;
   let documentId;
   let educationId;
@@ -551,7 +556,7 @@ describe('PATCH /users/:username/documents/:documentId/educations/:educationId',
   test('Updates an education.', async () => {
     // Act
     const resp = await request(app)
-      .patch(getEducationsSpecificUrl(username, documentId, educationId))
+      .patch(getEducationUrl(username, educationId))
       .send(updatedProps)
       .set('authorization', `Bearer ${authToken}`);
 
@@ -571,26 +576,6 @@ describe('PATCH /users/:username/documents/:documentId/educations/:educationId',
   });
 
   test(
-    'Giving an invalid document ID in the URL ' + 'should return 400 status.',
-    async () => {
-      // Arrange
-      const invalidDocumentId = 'invalid';
-
-      // Act
-      const resp = await request(app)
-        .patch(
-          getEducationsSpecificUrl(username, invalidDocumentId, educationId)
-        )
-        .send(updatedProps)
-        .set('authorization', `Bearer ${authToken}`);
-
-      // Assert
-      expect(resp.statusCode).toBe(400);
-      expect(resp.body).not.toHaveProperty('education');
-    }
-  );
-
-  test(
     'Giving an invalid education property ' + 'should return 400 status.',
     async () => {
       // Arrange
@@ -598,63 +583,12 @@ describe('PATCH /users/:username/documents/:documentId/educations/:educationId',
 
       // Act
       const resp = await request(app)
-        .patch(getEducationsSpecificUrl(username, documentId, educationId))
+        .patch(getEducationUrl(username, educationId))
         .send(invalidUpdatedProps)
         .set('authorization', `Bearer ${authToken}`);
 
       // Assert
       expect(resp.statusCode).toBe(400);
-      expect(resp.body).not.toHaveProperty('education');
-    }
-  );
-
-  test(
-    'Updating an education not in the master resume ' +
-      'should return 403 status.',
-    async () => {
-      // Arrange
-      // Adding another resume.
-      const notMasterDocumentId = (
-        await request(app)
-          .post(getDocumentsGeneralUrl(username))
-          .send({ documentName: 'Resume 2', isTemplate: false })
-          .set('authorization', `Bearer ${authToken}`)
-      ).body.document.id;
-
-      // Act
-      const resp = await request(app)
-        .patch(
-          getEducationsSpecificUrl(username, notMasterDocumentId, educationId)
-        )
-        .send(updatedProps)
-        .set('authorization', `Bearer ${authToken}`);
-
-      // Assert
-      expect(resp.statusCode).toBe(403);
-      expect(resp.body).not.toHaveProperty('education');
-
-      // Clean up
-      await Document.delete(notMasterDocumentId);
-    }
-  );
-
-  test(
-    'Updating an education in a nonexistent document' +
-      'should return 404 status.',
-    async () => {
-      // Arrange
-      const nonexistentDocumentId = 99;
-
-      // Act
-      const resp = await request(app)
-        .patch(
-          getEducationsSpecificUrl(username, nonexistentDocumentId, educationId)
-        )
-        .send(updatedProps)
-        .set('authorization', `Bearer ${authToken}`);
-
-      // Assert
-      expect(resp.statusCode).toBe(404);
       expect(resp.body).not.toHaveProperty('education');
     }
   );
@@ -665,9 +599,7 @@ describe('PATCH /users/:username/documents/:documentId/educations/:educationId',
 
     // Act
     const resp = await request(app)
-      .patch(
-        getEducationsSpecificUrl(username, documentId, nonexistentEducationId)
-      )
+      .patch(getEducationUrl(username, nonexistentEducationId))
       .send(updatedProps)
       .set('authorization', `Bearer ${authToken}`);
 
@@ -675,25 +607,6 @@ describe('PATCH /users/:username/documents/:documentId/educations/:educationId',
     expect(resp.statusCode).toBe(404);
     expect(resp.body).not.toHaveProperty('education');
   });
-
-  test(
-    "Attempting to access another user's document " +
-      'should return 403 status.',
-    async () => {
-      // Arrange
-      const otherAuthToken = authTokens[1];
-
-      // Act
-      const resp = await request(app)
-        .patch(getEducationsSpecificUrl(username, documentId, educationId))
-        .send(updatedProps)
-        .set('authorization', `Bearer ${otherAuthToken}`);
-
-      // Assert
-      expect(resp.statusCode).toBe(403);
-      expect(resp.body).not.toHaveProperty('education');
-    }
-  );
 
   test("Updating another user's education should return 403 status.", async () => {
     // Arrange
@@ -707,7 +620,7 @@ describe('PATCH /users/:username/documents/:documentId/educations/:educationId',
 
     // Act
     resp = await request(app)
-      .patch(getEducationsSpecificUrl(username, documentId, otherEducationId))
+      .patch(getEducationUrl(username, otherEducationId))
       .send(updatedProps)
       .set('authorization', `Bearer ${authToken}`);
 

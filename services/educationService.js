@@ -10,7 +10,10 @@ const {
   createSectionItem,
   createDocumentXSectionTypeRelationship,
 } = require('./commonSectionsService');
-const { validateOwnership } = require('../util/serviceHelpers');
+const {
+  validateOwnership,
+  transformObjectEmptyStringValuesIntoNulls,
+} = require('../util/serviceHelpers');
 
 const { BadRequestError, ForbiddenError } = require('../errors/appErrors');
 
@@ -82,61 +85,33 @@ async function createDocument_x_education(username, documentId, educationId) {
 }
 
 /**
- * Verifies that an education belongs to the specified user.  Checks if the
- * education is being updated in the master resume.  Then updates the education.
+ * Verifies that an education belongs to the specified user and then updates
+ * the education.
  *
  * @param {String} username - Name of user that wants to update the education.
- * @param {Number} documentId - ID of the document that the education belongs
- *  to.
  * @param {Number} educationId - ID of the education to update.
  * @param {Object} props - Properties of the education to be updated.  See route
  *  for full list.
  * @returns {Education} An Education instance containing the updated info.
- * @throws {ForbiddenError} If the education does not belong to the user or if
- *  the document is not the master resume.
  */
-async function updateEducation(username, documentId, educationId, props) {
+async function updateEducation(username, educationId, props) {
   const logPrefix =
     `${fileName}.updateEducation(` +
     `username = "${username}", ` +
-    `documentId = ${documentId}, ` +
     `educationId = ${educationId}), ` +
     `props = ${JSON.stringify(props)})`;
   logger.verbose(logPrefix);
 
-  // Verify ownership.
   const education = await validateOwnership(
     Education,
     username,
     { id: educationId },
     logPrefix
   );
-  const document = await validateOwnership(
-    Document,
-    username,
-    { id: documentId },
-    logPrefix
+
+  return await education.update(
+    transformObjectEmptyStringValuesIntoNulls(props)
   );
-
-  // Verify that document is master.
-  if (!document.isMaster) {
-    logger.error(
-      `${logPrefix}: User attempted to update education not in master resume.`
-    );
-    throw new ForbiddenError(
-      'Educations can only be updated in the master resume.'
-    );
-  }
-
-  // Transform empty Strings into null, where using null will clear an attribute
-  // in the database table.
-  const transformedProps = { ...props };
-  for (const key in transformedProps) {
-    if (transformedProps[key] === '') transformedProps[key] = null;
-  }
-
-  // Update education.
-  return await education.update(transformedProps);
 }
 
 /**

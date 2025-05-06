@@ -3,16 +3,12 @@
 const Document = require('../models/document');
 const Education = require('../models/education');
 const Document_X_Education = require('../models/document_x_education');
-const {
-  updateEducation,
-  updateDocument_x_educationPositions,
-} = require('./educationService');
+const { updateDocument_x_educationPositions } = require('./educationService');
 const {
   validateOwnership: mockValidateOwnership,
 } = require('../util/serviceHelpers');
 
 const { BadRequestError } = require('../errors/appErrors');
-const { ForbiddenError } = require('../errors/appErrors');
 
 const { documents_x_educations } = require('../_testData');
 const { shuffle } = require('../util/array');
@@ -27,110 +23,6 @@ jest.mock('../models/education');
 
 const username = 'user1';
 const documentId = 1;
-
-// --------------------------------------------------
-// updateEducation
-
-describe('updateEducation', () => {
-  const educationId = 1;
-  const props = Object.freeze({ school: 'University 10' });
-
-  const mockUpdatedEducation = Object.freeze({});
-  const getMockOriginalEducation = (owner) =>
-    Object.freeze({
-      owner,
-      update: jest.fn(async () => mockUpdatedEducation),
-    });
-
-  beforeEach(() => {
-    mockValidateOwnership.mockReset();
-  });
-
-  test('Updates an education.', async () => {
-    // Arrange
-    const mockOriginalEducation = getMockOriginalEducation(username);
-    const document = { owner: username, isMaster: true };
-
-    mockValidateOwnership.mockImplementation((modelClass) => {
-      switch (modelClass) {
-        case Education:
-          return mockOriginalEducation;
-        case Document:
-          return document;
-      }
-    });
-
-    // Act
-    const updatedEducation = await updateEducation(
-      username,
-      documentId,
-      educationId,
-      props
-    );
-
-    // Assert
-    expect(updatedEducation).toBe(mockUpdatedEducation);
-
-    expect(mockValidateOwnership).toHaveBeenNthCalledWith(
-      1,
-      Education,
-      username,
-      { id: educationId },
-      expect.any(String)
-    );
-
-    expect(mockValidateOwnership).toHaveBeenNthCalledWith(
-      2,
-      Document,
-      username,
-      { id: documentId },
-      expect.any(String)
-    );
-
-    expect(mockOriginalEducation.update).toHaveBeenCalledWith(props);
-  });
-
-  test('Throws an Error if document is not master.', async () => {
-    // Arrange
-    const mockOriginalEducation = getMockOriginalEducation(username);
-    const document = { owner: username, isMaster: false };
-
-    mockValidateOwnership.mockImplementation((modelClass) => {
-      switch (modelClass) {
-        case Education:
-          return mockOriginalEducation;
-        case Document:
-          return document;
-      }
-    });
-
-    // Act
-    async function runFunc() {
-      await updateEducation(username, documentId, educationId, props);
-    }
-
-    // Assert
-    await expect(runFunc).rejects.toThrow(ForbiddenError);
-
-    expect(mockValidateOwnership).toHaveBeenNthCalledWith(
-      1,
-      Education,
-      username,
-      { id: educationId },
-      expect.any(String)
-    );
-
-    expect(mockValidateOwnership).toHaveBeenNthCalledWith(
-      2,
-      Document,
-      username,
-      { id: documentId },
-      expect.any(String)
-    );
-
-    expect(mockOriginalEducation.update).not.toHaveBeenCalled();
-  });
-});
 
 // --------------------------------------------------
 // updateDocument_x_educationPositions
