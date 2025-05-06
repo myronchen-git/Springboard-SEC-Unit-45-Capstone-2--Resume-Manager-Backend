@@ -6,10 +6,12 @@ const fileName = path.basename(__filename, '.js');
 const Document = require('../models/document');
 const Experience = require('../models/experience');
 const Document_X_Experience = require('../models/document_x_experience');
-const { createSectionItem } = require('./commonSectionsService');
+const {
+  createSectionItem,
+  createDocumentXSectionTypeRelationship,
+} = require('./commonSectionsService');
 const {
   validateOwnership,
-  getLastPosition,
   transformObjectEmptyStringValuesIntoNulls,
 } = require('../util/serviceHelpers');
 
@@ -74,46 +76,13 @@ async function createExperience(username, documentId, props) {
  *  contains the document-experience relationship data.
  */
 async function createDocument_x_experience(username, documentId, experienceId) {
-  const logPrefix =
-    `${fileName}.createDocument_x_experience(` +
-    `username = "${username}", ` +
-    `documentId = ${documentId}, ` +
-    `experienceId = ${experienceId})`;
-  logger.verbose(logPrefix);
-
-  // Verify ownership.
-  await validateOwnership(
+  return await createDocumentXSectionTypeRelationship(
     Experience,
+    Document_X_Experience,
     username,
-    { id: experienceId },
-    logPrefix
+    documentId,
+    experienceId
   );
-  await validateOwnership(Document, username, { id: documentId }, logPrefix);
-
-  // Find next proper position to place experience in.
-  const documents_x_experiences = await Document_X_Experience.getAll(
-    documentId
-  );
-  const nextPosition = getLastPosition(documents_x_experiences) + 1;
-
-  // Add relationship.
-  try {
-    return await Document_X_Experience.add({
-      documentId,
-      experienceId,
-      position: nextPosition,
-    });
-  } catch (err) {
-    // PostgreSQL error code 23505 is for unique constraint violation.
-    if (err.code === '23505') {
-      logger.error(`${logPrefix}: Relationship already exists.`);
-      throw new BadRequestError(
-        'Can not add experience to document, as it already exists.'
-      );
-    } else {
-      throw err;
-    }
-  }
 }
 
 /**

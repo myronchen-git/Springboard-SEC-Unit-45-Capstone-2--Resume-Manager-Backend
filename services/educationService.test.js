@@ -4,13 +4,11 @@ const Document = require('../models/document');
 const Education = require('../models/education');
 const Document_X_Education = require('../models/document_x_education');
 const {
-  createDocument_x_education,
   updateEducation,
   updateDocument_x_educationPositions,
 } = require('./educationService');
 const {
   validateOwnership: mockValidateOwnership,
-  getLastPosition: mockGetLastPosition,
 } = require('../util/serviceHelpers');
 
 const { BadRequestError } = require('../errors/appErrors');
@@ -29,134 +27,6 @@ jest.mock('../models/education');
 
 const username = 'user1';
 const documentId = 1;
-
-// --------------------------------------------------
-// createDocument_x_education
-
-describe('createDocument_x_education', () => {
-  beforeEach(() => {
-    mockValidateOwnership.mockReset();
-    Document_X_Education.getAll.mockReset();
-    mockGetLastPosition.mockReset();
-    Document_X_Education.add.mockReset();
-  });
-
-  test.each([
-    [Object.freeze([]), -1],
-    [documents_x_educations, 1],
-  ])(
-    'Adds a Document_X_Education, if document is found and belongs to user, ' +
-      'and at the correct next position.  Existing documents_x_educations = %j.',
-    async (existingDocuments_x_educations, lastPosition) => {
-      // Arrange
-      const educationIdToAdd = 3;
-
-      const mockDocument_x_education = Object.freeze({});
-      Document_X_Education.getAll.mockResolvedValue(
-        existingDocuments_x_educations
-      );
-      mockGetLastPosition.mockReturnValue(lastPosition);
-      Document_X_Education.add.mockResolvedValue(mockDocument_x_education);
-
-      // Act
-      const document_x_education = await createDocument_x_education(
-        username,
-        documentId,
-        educationIdToAdd
-      );
-
-      // Assert
-      expect(document_x_education).toBe(mockDocument_x_education);
-
-      expect(mockValidateOwnership).toHaveBeenNthCalledWith(
-        1,
-        Education,
-        username,
-        { id: educationIdToAdd },
-        expect.any(String)
-      );
-
-      expect(mockValidateOwnership).toHaveBeenNthCalledWith(
-        2,
-        Document,
-        username,
-        { id: documentId },
-        expect.any(String)
-      );
-
-      expect(Document_X_Education.getAll).toHaveBeenCalledWith(documentId);
-
-      expect(mockGetLastPosition).toHaveBeenCalledWith(
-        existingDocuments_x_educations
-      );
-
-      expect(Document_X_Education.add).toHaveBeenCalledWith({
-        documentId,
-        educationId: educationIdToAdd,
-        position: lastPosition + 1,
-      });
-    }
-  );
-
-  test(
-    'Throws a BadRequestError if adding a Document_X_Education results in ' +
-      'a duplicate primary key database error.',
-    async () => {
-      // Arrange
-      const educationIdToAdd = 3;
-      const existingDocuments_x_educations = Object.freeze([]);
-      const lastPosition = -1;
-
-      const mockDatabaseError = { code: '23505' };
-
-      Document_X_Education.getAll.mockResolvedValue(
-        existingDocuments_x_educations
-      );
-      mockGetLastPosition.mockReturnValue(lastPosition);
-      Document_X_Education.add.mockRejectedValue(mockDatabaseError);
-
-      // Act
-      async function runFunc() {
-        await createDocument_x_education(
-          username,
-          documentId,
-          educationIdToAdd
-        );
-      }
-
-      // Assert
-      await expect(runFunc).rejects.toThrow(BadRequestError);
-
-      expect(mockValidateOwnership).toHaveBeenNthCalledWith(
-        1,
-        Education,
-        username,
-        { id: educationIdToAdd },
-        expect.any(String)
-      );
-
-      expect(mockValidateOwnership).toHaveBeenNthCalledWith(
-        2,
-        Document,
-        username,
-        { id: documentId },
-        expect.any(String)
-      );
-
-      expect(Document_X_Education.getAll).toHaveBeenCalledWith(documentId);
-
-      expect(mockGetLastPosition).toHaveBeenCalledWith(
-        existingDocuments_x_educations
-      );
-
-      expect(Document_X_Education.add).toHaveBeenCalledWith({
-        documentId,
-        educationId: educationIdToAdd,
-        position: lastPosition + 1,
-      });
-    }
-  );
-});
 
 // --------------------------------------------------
 // updateEducation

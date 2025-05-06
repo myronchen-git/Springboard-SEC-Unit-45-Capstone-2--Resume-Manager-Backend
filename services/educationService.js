@@ -6,11 +6,11 @@ const fileName = path.basename(__filename, '.js');
 const Document = require('../models/document');
 const Education = require('../models/education');
 const Document_X_Education = require('../models/document_x_education');
-const { createSectionItem } = require('./commonSectionsService');
 const {
-  validateOwnership,
-  getLastPosition,
-} = require('../util/serviceHelpers');
+  createSectionItem,
+  createDocumentXSectionTypeRelationship,
+} = require('./commonSectionsService');
+const { validateOwnership } = require('../util/serviceHelpers');
 
 const { BadRequestError, ForbiddenError } = require('../errors/appErrors');
 
@@ -72,39 +72,13 @@ async function createEducation(username, documentId, props) {
  *  the document-education relationship data.
  */
 async function createDocument_x_education(username, documentId, educationId) {
-  const logPrefix =
-    `${fileName}.createDocument_x_education(` +
-    `username = "${username}", ` +
-    `documentId = ${documentId}, ` +
-    `educationId = ${educationId})`;
-  logger.verbose(logPrefix);
-
-  // Verify ownership.
-  await validateOwnership(Education, username, { id: educationId }, logPrefix);
-  await validateOwnership(Document, username, { id: documentId }, logPrefix);
-
-  // Find next proper position to place education in.
-  const documents_x_educations = await Document_X_Education.getAll(documentId);
-  const nextPosition = getLastPosition(documents_x_educations) + 1;
-
-  // Add relationship.
-  try {
-    return await Document_X_Education.add({
-      documentId,
-      educationId,
-      position: nextPosition,
-    });
-  } catch (err) {
-    // PostgreSQL error code 23505 is for unique constraint violation.
-    if (err.code === '23505') {
-      logger.error(`${logPrefix}: Relationship already exists.`);
-      throw new BadRequestError(
-        'Can not add education to document, as it already exists.'
-      );
-    } else {
-      throw err;
-    }
-  }
+  return await createDocumentXSectionTypeRelationship(
+    Education,
+    Document_X_Education,
+    username,
+    documentId,
+    educationId
+  );
 }
 
 /**

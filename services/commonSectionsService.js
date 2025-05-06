@@ -8,8 +8,9 @@ const {
   validateOwnership,
   getLastPosition,
 } = require('../util/serviceHelpers');
+const { pascalToSpaceSeparated } = require('../util/caseConversions');
 
-const { ForbiddenError } = require('../errors/appErrors');
+const { BadRequestError, ForbiddenError } = require('../errors/appErrors');
 
 const logger = require('../util/logger');
 
@@ -96,8 +97,73 @@ async function createSectionItem(
   };
 }
 
+/**
+ * Creates a document-(section item) relationship entry in the database. Section
+ * item and document ownership are verified, then the next position is found by
+ * getting all document-(section item) relationship records.
+ *
+ * @param {String} username - Name of user that wants to interact with the
+ *  document.  This should be the owner.
+ * @param {Number} documentId - ID of the document that is having a section item
+ *  attach to it.
+ * @param {Number} sectionItemId - ID of the section item to attach to the
+ *  document.
+ * @returns {Promise<DocumentXSectionTypeClass>} A document and specific section
+ *  type relationship instance that contains the relationship data.
+ * @throws {BadRequestError} If relationship already exists.
+ */
+async function createDocumentXSectionTypeRelationship(
+  classRef,
+  documentXClassRef,
+  username,
+  documentId,
+  sectionItemId
+) {
+  const logPrefix =
+    `${fileName}.createDocumentXSectionTypeRelationship(` +
+    `username = "${username}", ` +
+    `documentId = ${documentId}, ` +
+    `sectionItemId = ${sectionItemId})`;
+  logger.verbose(logPrefix);
+
+  const className = classRef.name;
+  const classNameLowerCaseSpaced = pascalToSpaceSeparated(className);
+  const classNameCamelCase = className[0].toLowerCase() + className.slice(1);
+
+  // Verify ownership.
+  await validateOwnership(classRef, username, { id: sectionItemId }, logPrefix);
+  await validateOwnership(Document, username, { id: documentId }, logPrefix);
+
+  // Find next proper position to place section item in.
+  const documentXSectionTypeRelationships = await documentXClassRef.getAll(
+    documentId
+  );
+  const nextPosition = getLastPosition(documentXSectionTypeRelationships) + 1;
+
+  // Add relationship.
+  try {
+    return await documentXClassRef.add({
+      documentId,
+      [classNameCamelCase + 'Id']: sectionItemId,
+      position: nextPosition,
+    });
+  } catch (err) {
+    // PostgreSQL error code 23505 is for unique constraint violation.
+    if (err.code === '23505') {
+      logger.error(`${logPrefix}: Relationship already exists.`);
+      throw new BadRequestError(
+        `Can not add ${classNameLowerCaseSpaced} to document, ` +
+          'as it already exists.'
+      );
+    } else {
+      throw err;
+    }
+  }
+}
+
 // ==================================================
 
 module.exports = {
   createSectionItem,
+  createDocumentXSectionTypeRelationship,
 };

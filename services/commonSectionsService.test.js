@@ -1,16 +1,20 @@
 'use strict';
 
 const Document = require('../models/document');
-const { createSectionItem } = require('./commonSectionsService');
+const {
+  createSectionItem,
+  createDocumentXSectionTypeRelationship,
+} = require('./commonSectionsService');
 const {
   validateOwnership: mockValidateOwnership,
   getLastPosition: mockGetLastPosition,
 } = require('../util/serviceHelpers');
 
-const { ForbiddenError } = require('../errors/appErrors');
+const { BadRequestError, ForbiddenError } = require('../errors/appErrors');
 
 // ==================================================
 
+jest.mock('../models/document');
 jest.mock('../util/serviceHelpers');
 
 // ==================================================
@@ -192,5 +196,183 @@ describe('createSectionItem', () => {
     expect(GenericDocumentXSectionType.getAll).not.toHaveBeenCalled();
     expect(mockGetLastPosition).not.toHaveBeenCalled();
     expect(GenericDocumentXSectionType.add).not.toHaveBeenCalled();
+  });
+});
+
+// --------------------------------------------------
+// createDocumentXSectionTypeRelationship
+
+describe('createDocumentXSectionTypeRelationship', () => {
+  const sectionItemId = 1;
+  const documentXSectionTypeRelationshipsMock = Object.freeze([]);
+  const lastPosition = 9;
+  const documentXSectionTypeRelationshipMock = Object.freeze({});
+
+  beforeEach(() => {
+    mockValidateOwnership.mockReset();
+    GenericDocumentXSectionType.getAll.mockClear();
+    mockGetLastPosition.mockReset();
+    GenericDocumentXSectionType.add.mockClear();
+  });
+
+  test(
+    'Creates a document-(section item) relationship' +
+      ' at the correct next position.',
+    async () => {
+      // Arrange
+      GenericDocumentXSectionType.getAll.mockResolvedValue(
+        documentXSectionTypeRelationshipsMock
+      );
+      mockGetLastPosition.mockReturnValue(lastPosition);
+      GenericDocumentXSectionType.add.mockResolvedValue(
+        documentXSectionTypeRelationshipMock
+      );
+
+      // Act
+      const result = await createDocumentXSectionTypeRelationship(
+        GenericSectionType,
+        GenericDocumentXSectionType,
+        username,
+        documentId,
+        sectionItemId
+      );
+
+      // Assert
+      expect(result).toBe(documentXSectionTypeRelationshipMock);
+
+      expect(mockValidateOwnership).toHaveBeenCalledTimes(2);
+      expect(mockValidateOwnership).toHaveBeenCalledWith(
+        GenericSectionType,
+        username,
+        { id: sectionItemId },
+        expect.any(String)
+      );
+      expect(mockValidateOwnership).toHaveBeenCalledWith(
+        Document,
+        username,
+        { id: documentId },
+        expect.any(String)
+      );
+
+      expect(GenericDocumentXSectionType.getAll).toHaveBeenCalledWith(
+        documentId
+      );
+
+      expect(mockGetLastPosition).toHaveBeenCalledWith(
+        documentXSectionTypeRelationshipsMock
+      );
+
+      expect(GenericDocumentXSectionType.add).toHaveBeenCalledWith({
+        documentId,
+        genericSectionTypeId: sectionItemId,
+        position: lastPosition + 1,
+      });
+    }
+  );
+
+  test(
+    'Throws an Error if relationship already exists ' +
+      '(PostgreSQL error code 23505).',
+    async () => {
+      // Arrange
+      const duplicateError = new Error('database error');
+      duplicateError.code = '23505';
+
+      GenericDocumentXSectionType.getAll.mockResolvedValue(
+        documentXSectionTypeRelationshipsMock
+      );
+      mockGetLastPosition.mockReturnValue(lastPosition);
+      GenericDocumentXSectionType.add.mockRejectedValue(duplicateError);
+
+      // Act / Assert
+      await expect(
+        createDocumentXSectionTypeRelationship(
+          GenericSectionType,
+          GenericDocumentXSectionType,
+          username,
+          documentId,
+          sectionItemId
+        )
+      ).rejects.toThrow(BadRequestError);
+
+      // Assert
+      expect(mockValidateOwnership).toHaveBeenCalledTimes(2);
+      expect(mockValidateOwnership).toHaveBeenCalledWith(
+        GenericSectionType,
+        username,
+        { id: sectionItemId },
+        expect.any(String)
+      );
+      expect(mockValidateOwnership).toHaveBeenCalledWith(
+        Document,
+        username,
+        { id: documentId },
+        expect.any(String)
+      );
+
+      expect(GenericDocumentXSectionType.getAll).toHaveBeenCalledWith(
+        documentId
+      );
+
+      expect(mockGetLastPosition).toHaveBeenCalledWith(
+        documentXSectionTypeRelationshipsMock
+      );
+
+      expect(GenericDocumentXSectionType.add).toHaveBeenCalledWith({
+        documentId,
+        genericSectionTypeId: sectionItemId,
+        position: lastPosition + 1,
+      });
+    }
+  );
+
+  test("Rethrows unknown errors from relationship class' add().", async () => {
+    // Arrange
+    const unknownError = new Error('database error');
+    unknownError.code = '99999';
+
+    GenericDocumentXSectionType.getAll.mockResolvedValue(
+      documentXSectionTypeRelationshipsMock
+    );
+    mockGetLastPosition.mockReturnValue(lastPosition);
+    GenericDocumentXSectionType.add.mockRejectedValue(unknownError);
+
+    // Act / Assert
+    await expect(
+      createDocumentXSectionTypeRelationship(
+        GenericSectionType,
+        GenericDocumentXSectionType,
+        username,
+        documentId,
+        sectionItemId
+      )
+    ).rejects.not.toThrow(BadRequestError);
+
+    // Assert
+    expect(mockValidateOwnership).toHaveBeenCalledTimes(2);
+    expect(mockValidateOwnership).toHaveBeenCalledWith(
+      GenericSectionType,
+      username,
+      { id: sectionItemId },
+      expect.any(String)
+    );
+    expect(mockValidateOwnership).toHaveBeenCalledWith(
+      Document,
+      username,
+      { id: documentId },
+      expect.any(String)
+    );
+
+    expect(GenericDocumentXSectionType.getAll).toHaveBeenCalledWith(documentId);
+
+    expect(mockGetLastPosition).toHaveBeenCalledWith(
+      documentXSectionTypeRelationshipsMock
+    );
+
+    expect(GenericDocumentXSectionType.add).toHaveBeenCalledWith({
+      documentId,
+      genericSectionTypeId: sectionItemId,
+      position: lastPosition + 1,
+    });
   });
 });
