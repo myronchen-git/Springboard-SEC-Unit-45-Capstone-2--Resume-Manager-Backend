@@ -9,13 +9,12 @@ const Document_X_Education = require('../models/document_x_education');
 const {
   createSectionItem,
   createDocumentXSectionTypeRelationship,
+  updateDocumentXSectionTypePositions,
 } = require('./commonSectionsService');
 const {
   validateOwnership,
   transformObjectEmptyStringValuesIntoNulls,
 } = require('../util/serviceHelpers');
-
-const { BadRequestError, ForbiddenError } = require('../errors/appErrors');
 
 const logger = require('../util/logger');
 
@@ -137,29 +136,13 @@ async function updateDocument_x_educationPositions(
     `educationIds = ${educationIds})`;
   logger.verbose(logPrefix);
 
-  await validateOwnership(Document, username, { id: documentId }, logPrefix);
-
-  // Verify that educationIds contains all of the educations in the document.
-  const documents_x_educations = await Document_X_Education.getAll(documentId);
-  if (
-    documents_x_educations.length !== educationIds.length ||
-    !documents_x_educations.every((dxe) =>
-      educationIds.includes(dxe.educationId)
-    )
-  ) {
-    logger.error(
-      `${logPrefix}: Provided education IDs do not exactly ` +
-        'match those in document.'
-    );
-    throw new BadRequestError(
-      'All educations, and only those, need to be included ' +
-        'when updating their positions in a document.'
-    );
-  }
-
-  await Document_X_Education.updateAllPositions(documentId, educationIds);
-
-  return await Education.getAllInDocument(documentId);
+  return await updateDocumentXSectionTypePositions(
+    Education,
+    Document_X_Education,
+    username,
+    documentId,
+    educationIds
+  );
 }
 
 /**

@@ -9,13 +9,12 @@ const Document_X_Experience = require('../models/document_x_experience');
 const {
   createSectionItem,
   createDocumentXSectionTypeRelationship,
+  updateDocumentXSectionTypePositions,
 } = require('./commonSectionsService');
 const {
   validateOwnership,
   transformObjectEmptyStringValuesIntoNulls,
 } = require('../util/serviceHelpers');
-
-const { BadRequestError } = require('../errors/appErrors');
 
 const logger = require('../util/logger');
 
@@ -140,31 +139,13 @@ async function updateDocument_x_experiencePositions(
     `experienceIds = ${JSON.stringify(experienceIds)})`;
   logger.verbose(logPrefix);
 
-  await validateOwnership(Document, username, { id: documentId }, logPrefix);
-
-  // Verify that experienceIds contains all of the experiences in the document.
-  const documents_x_experiences = await Document_X_Experience.getAll(
-    documentId
+  return await updateDocumentXSectionTypePositions(
+    Experience,
+    Document_X_Experience,
+    username,
+    documentId,
+    experienceIds
   );
-  if (
-    documents_x_experiences.length !== experienceIds.length ||
-    !documents_x_experiences.every((dxe) =>
-      experienceIds.includes(dxe.experienceId)
-    )
-  ) {
-    logger.error(
-      `${logPrefix}: Provided experience IDs do not exactly ` +
-        'match those in document.'
-    );
-    throw new BadRequestError(
-      'All experiences, and only those, need to be included ' +
-        'when updating their positions in a document.'
-    );
-  }
-
-  await Document_X_Experience.updateAllPositions(documentId, experienceIds);
-
-  return await Experience.getAllInDocument(documentId);
 }
 
 /**

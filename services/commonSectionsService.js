@@ -161,9 +161,71 @@ async function createDocumentXSectionTypeRelationship(
   }
 }
 
+/**
+ * Changes the order of items in a section in a document.
+ *
+ * @param {String} username - Name of user that wants to interact with the
+ *  document.  This should be the owner.
+ * @param {Number} documentId - ID of the document that is having its section
+ *  items reordered.
+ * @param {Number[]} sectionItemIds - List of section item IDs with the desired
+ *  ordering.
+ * @returns {Promise<SectionTypeClass[]>} A list of section item instances, in
+ *  order of position.
+ * @throws {BadRequestError} If given section item IDs do not exactly match all
+ *  section items of a section in a document.
+ */
+async function updateDocumentXSectionTypePositions(
+  classRef,
+  documentXClassRef,
+  username,
+  documentId,
+  sectionItemIds
+) {
+  const logPrefix =
+    `${fileName}.updateDocumentXSectionTypePositions(` +
+    `username = "${username}", ` +
+    `documentId = ${documentId}, ` +
+    `sectionItemIds = ${JSON.stringify(sectionItemIds)})`;
+  logger.verbose(logPrefix);
+
+  const className = classRef.name;
+  const classNameLowerCaseSpaced = sentenceCase(className).toLowerCase();
+  const classNameCamelCase = camelCase(className);
+
+  await validateOwnership(Document, username, { id: documentId }, logPrefix);
+
+  // Verify that sectionItemIds contains all of the section items in the
+  // document.
+  const documentXSectionTypeRelationships = await documentXClassRef.getAll(
+    documentId
+  );
+
+  if (
+    documentXSectionTypeRelationships.length !== sectionItemIds.length ||
+    !documentXSectionTypeRelationships.every((relationship) =>
+      sectionItemIds.includes(relationship[classNameCamelCase + 'Id'])
+    )
+  ) {
+    logger.error(
+      `${logPrefix}: Provided ${classNameLowerCaseSpaced} IDs ` +
+        'do not exactly match those in document.'
+    );
+    throw new BadRequestError(
+      `Exactly all ${classNameLowerCaseSpaced}s need to be included ` +
+        'when updating their positions in a document.'
+    );
+  }
+
+  await documentXClassRef.updateAllPositions(documentId, sectionItemIds);
+
+  return await classRef.getAllInDocument(documentId);
+}
+
 // ==================================================
 
 module.exports = {
   createSectionItem,
   createDocumentXSectionTypeRelationship,
+  updateDocumentXSectionTypePositions,
 };

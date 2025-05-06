@@ -4,6 +4,7 @@ const Document = require('../models/document');
 const {
   createSectionItem,
   createDocumentXSectionTypeRelationship,
+  updateDocumentXSectionTypePositions,
 } = require('./commonSectionsService');
 const {
   validateOwnership: mockValidateOwnership,
@@ -26,6 +27,7 @@ const documentId = 1;
 const GenericSectionType = Object.freeze({
   name: 'GenericSectionType',
   add: jest.fn(),
+  getAllInDocument: jest.fn(),
 });
 
 // Generic class for document-section relationships like Document_X_Education
@@ -33,6 +35,7 @@ const GenericSectionType = Object.freeze({
 const GenericDocumentXSectionType = Object.freeze({
   add: jest.fn(),
   getAll: jest.fn(),
+  updateAllPositions: jest.fn(),
 });
 
 // --------------------------------------------------
@@ -374,5 +377,142 @@ describe('createDocumentXSectionTypeRelationship', () => {
       genericSectionTypeId: sectionItemId,
       position: lastPosition + 1,
     });
+  });
+});
+
+// --------------------------------------------------
+// updateDocumentXSectionTypePositions
+
+describe('updateDocumentXSectionTypePositions', () => {
+  const documentXSectionTypeRelationshipsMock = Object.freeze(
+    [
+      { genericSectionTypeId: 1 },
+      { genericSectionTypeId: 2 },
+      { genericSectionTypeId: 3 },
+    ].map((item) => Object.freeze(item))
+  );
+
+  beforeEach(() => {
+    jest.resetAllMocks();
+  });
+
+  test('Updates positions and returns ordered section items.', async () => {
+    // Arrange
+    const sectionItemIds = Object.freeze([3, 1, 2]);
+    const repositionedSectionItemsMock = Object.freeze([]);
+
+    GenericDocumentXSectionType.getAll.mockResolvedValue(
+      documentXSectionTypeRelationshipsMock
+    );
+    GenericSectionType.getAllInDocument.mockResolvedValue(
+      repositionedSectionItemsMock
+    );
+
+    // Act
+    const result = await updateDocumentXSectionTypePositions(
+      GenericSectionType,
+      GenericDocumentXSectionType,
+      username,
+      documentId,
+      sectionItemIds
+    );
+
+    // Assert
+    expect(result).toBe(repositionedSectionItemsMock);
+
+    expect(mockValidateOwnership).toHaveBeenCalledWith(
+      Document,
+      username,
+      { id: documentId },
+      expect.any(String)
+    );
+
+    expect(GenericDocumentXSectionType.getAll).toHaveBeenCalledWith(documentId);
+
+    expect(GenericDocumentXSectionType.updateAllPositions).toHaveBeenCalledWith(
+      documentId,
+      sectionItemIds
+    );
+
+    expect(GenericSectionType.getAllInDocument).toHaveBeenCalledWith(
+      documentId
+    );
+  });
+
+  test.each([[[3, 1]], [[3, 1, 2, 4]]])(
+    'Throws an Error if number of section item IDs does not match.',
+    async (sectionItemIds) => {
+      // Arrange
+      GenericDocumentXSectionType.getAll.mockResolvedValue(
+        documentXSectionTypeRelationshipsMock
+      );
+
+      // Act
+      async function runFunc() {
+        await updateDocumentXSectionTypePositions(
+          GenericSectionType,
+          GenericDocumentXSectionType,
+          username,
+          documentId,
+          sectionItemIds
+        );
+      }
+
+      // Assert
+      await expect(runFunc).rejects.toThrow(BadRequestError);
+
+      expect(mockValidateOwnership).toHaveBeenCalledWith(
+        Document,
+        username,
+        { id: documentId },
+        expect.any(String)
+      );
+
+      expect(GenericDocumentXSectionType.getAll).toHaveBeenCalledWith(
+        documentId
+      );
+
+      expect(
+        GenericDocumentXSectionType.updateAllPositions
+      ).not.toHaveBeenCalled();
+      expect(GenericSectionType.getAllInDocument).not.toHaveBeenCalled();
+    }
+  );
+
+  test('Throws an Error if section item IDs do not match.', async () => {
+    // Arrange
+    const sectionItemIds = [1, 2, 4];
+
+    GenericDocumentXSectionType.getAll.mockResolvedValue(
+      documentXSectionTypeRelationshipsMock
+    );
+
+    // Act
+    async function runFunc() {
+      await updateDocumentXSectionTypePositions(
+        GenericSectionType,
+        GenericDocumentXSectionType,
+        username,
+        documentId,
+        sectionItemIds
+      );
+    }
+
+    // Assert
+    await expect(runFunc).rejects.toThrow(BadRequestError);
+
+    expect(mockValidateOwnership).toHaveBeenCalledWith(
+      Document,
+      username,
+      { id: documentId },
+      expect.any(String)
+    );
+
+    expect(GenericDocumentXSectionType.getAll).toHaveBeenCalledWith(documentId);
+
+    expect(
+      GenericDocumentXSectionType.updateAllPositions
+    ).not.toHaveBeenCalled();
+    expect(GenericSectionType.getAllInDocument).not.toHaveBeenCalled();
   });
 });
