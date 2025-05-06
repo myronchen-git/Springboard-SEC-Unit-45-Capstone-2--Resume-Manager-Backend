@@ -1,10 +1,10 @@
 'use strict';
 
+const { snakeCase } = require('change-case-all');
+
 const db = require('../database/db');
 
 const Relationship = require('./relationship');
-
-const { camelToSnakeCase } = require('../util/caseConversions');
 
 const logger = require('../util/logger');
 
@@ -197,14 +197,14 @@ class Experience_X_Text_Snippet extends Relationship {
     let name = 'documentXExperienceId';
     const attachTo = {
       jsName: name,
-      sqlName: camelToSnakeCase(name),
+      sqlName: snakeCase(name),
       id: documentXExperienceId,
     };
 
     name = 'textSnippetId';
     const attachWiths = {
       jsName: name,
-      sqlName: camelToSnakeCase(name),
+      sqlName: snakeCase(name),
       ids: textSnippetIds,
     };
 

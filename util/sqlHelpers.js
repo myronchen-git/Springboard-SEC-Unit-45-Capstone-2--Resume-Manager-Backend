@@ -1,6 +1,6 @@
 'use strict';
 
-const { camelToSnakeCase } = require('./caseConversions');
+const { snakeCase } = require('change-case-all');
 
 // ==================================================
 
@@ -21,7 +21,7 @@ function convertPropsForSqlUpdate(props) {
   const sqlValues = [];
 
   Object.entries(props).forEach(([colName, val], i) => {
-    sqlSubstring += `\n    ${camelToSnakeCase(colName)} = $${i + 1},`;
+    sqlSubstring += `\n    ${snakeCase(colName)} = $${i + 1},`;
     sqlValues.push(val);
   });
 
@@ -49,9 +49,7 @@ function convertPropsForSqlWhereClause(props) {
   Object.entries(props).forEach(([alias, columnProps]) => {
     Object.entries(columnProps).forEach(([columnName, columnValue]) => {
       whereClauseConditions.push(
-        `${alias}.${camelToSnakeCase(
-          columnName
-        )} = $${parameterizedQueryNumber++}`
+        `${alias}.${snakeCase(columnName)} = $${parameterizedQueryNumber++}`
       );
       whereClauseValues.push(columnValue);
     });

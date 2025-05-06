@@ -2,13 +2,13 @@
 
 const path = require('path');
 const fileName = path.basename(__filename, '.js');
+const { camelCase, sentenceCase } = require('change-case-all');
 
 const Document = require('../models/document');
 const {
   validateOwnership,
   getLastPosition,
 } = require('../util/serviceHelpers');
-const { pascalToSpaceSeparated } = require('../util/caseConversions');
 
 const { BadRequestError, ForbiddenError } = require('../errors/appErrors');
 
@@ -127,8 +127,8 @@ async function createDocumentXSectionTypeRelationship(
   logger.verbose(logPrefix);
 
   const className = classRef.name;
-  const classNameLowerCaseSpaced = pascalToSpaceSeparated(className);
-  const classNameCamelCase = className[0].toLowerCase() + className.slice(1);
+  const classNameLowerCaseSpaced = sentenceCase(className).toLowerCase();
+  const classNameCamelCase = camelCase(className);
 
   // Verify ownership.
   await validateOwnership(classRef, username, { id: sectionItemId }, logPrefix);

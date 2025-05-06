@@ -1,8 +1,9 @@
 'use strict';
 
+const { sentenceCase } = require('change-case-all');
+
 const { ForbiddenError } = require('../errors/appErrors');
 
-const { pascalToSpaceSeparated } = require('./caseConversions');
 const logger = require('../util/logger');
 
 // ==================================================
@@ -29,9 +30,9 @@ async function validateOwnership(modelClass, username, idOrOthers, logPrefix) {
         `it belongs to "${object.owner}".`
     );
     throw new ForbiddenError(
-      `Can not access or interact with another user's ${pascalToSpaceSeparated(
+      `Can not access or interact with another user's ${sentenceCase(
         modelClass.name
-      )}.`
+      ).toLowerCase()}.`
     );
   }
 

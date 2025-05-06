@@ -1,8 +1,8 @@
 'use strict';
 
-const Relationship = require('./relationship');
+const { snakeCase } = require('change-case-all');
 
-const { camelToSnakeCase } = require('../util/caseConversions');
+const Relationship = require('./relationship');
 
 // ==================================================
 
@@ -128,14 +128,14 @@ class Document_X_Section extends Relationship {
     let name = 'documentId';
     const attachTo = {
       jsName: name,
-      sqlName: camelToSnakeCase(name),
+      sqlName: snakeCase(name),
       id: documentId,
     };
 
     name = 'sectionId';
     const attachWiths = {
       jsName: name,
-      sqlName: camelToSnakeCase(name),
+      sqlName: snakeCase(name),
       ids: sectionIds,
     };
 
