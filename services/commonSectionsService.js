@@ -49,6 +49,8 @@ async function createSectionItem(
 ) {
   const logPrefix =
     `${fileName}.createSectionItem(` +
+    `classRef = ${classRef.name}, ` +
+    `documentXClassRef = ${documentXClassRef.name}, ` +
     `username = "${username}", ` +
     `documentId = ${documentId}, ` +
     `props = ${JSON.stringify(props)})`;
@@ -121,6 +123,8 @@ async function createDocumentXSectionTypeRelationship(
 ) {
   const logPrefix =
     `${fileName}.createDocumentXSectionTypeRelationship(` +
+    `classRef = ${classRef.name}, ` +
+    `documentXClassRef = ${documentXClassRef.name}, ` +
     `username = "${username}", ` +
     `documentId = ${documentId}, ` +
     `sectionItemId = ${sectionItemId})`;
@@ -184,6 +188,8 @@ async function updateDocumentXSectionTypePositions(
 ) {
   const logPrefix =
     `${fileName}.updateDocumentXSectionTypePositions(` +
+    `classRef = ${classRef.name}, ` +
+    `documentXClassRef = ${documentXClassRef.name}, ` +
     `username = "${username}", ` +
     `documentId = ${documentId}, ` +
     `sectionItemIds = ${JSON.stringify(sectionItemIds)})`;
