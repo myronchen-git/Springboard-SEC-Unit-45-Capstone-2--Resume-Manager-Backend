@@ -3,7 +3,11 @@
 const db = require('../database/db');
 const { convertPropsForSqlUpdate } = require('../util/sqlHelpers');
 
-const { AppServerError, NotFoundError } = require('../errors/appErrors');
+const {
+  AppServerError,
+  BadRequestError,
+  NotFoundError,
+} = require('../errors/appErrors');
 
 const logger = require('../util/logger');
 
@@ -79,7 +83,18 @@ class Document {
       values: [documentName, owner, isMaster, isTemplate],
     };
 
-    const result = await db.query({ queryConfig, logPrefix });
+    const result = await db.query({
+      queryConfig,
+      logPrefix,
+      errorCallback: (err) => {
+        // PostgreSQL error code 23505 is for unique constraint violation.
+        if (err.code === '23505') {
+          throw new BadRequestError(
+            `Document with name "${documentName}" already exists.`
+          );
+        }
+      },
+    });
 
     return new Document(...Object.values(result.rows[0]));
   }
@@ -287,7 +302,20 @@ class Document {
       values: [...sqlValues, id],
     };
 
-    const result = await db.query({ queryConfig, logPrefix });
+    const result = await db.query({
+      queryConfig,
+      logPrefix,
+      errorCallback: (err) => {
+        // PostgreSQL error code 23505 is for unique constraint violation.
+        // Currently, only document name and owner combinations need to be
+        // unique.
+        if (err.code === '23505') {
+          throw new BadRequestError(
+            `Document with name "${docProps.documentName}" already exists.`
+          );
+        }
+      },
+    });
 
     // If no database table rows were affected, then the document was not found.
     if (result.rowCount === 0) {
